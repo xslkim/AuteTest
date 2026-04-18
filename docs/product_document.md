@@ -277,9 +277,12 @@ v1.0 里 `visual_region_changed` / `ai_judge` 等 MVP 不做。
 │          → 得到 (x, y)                                  │
 │      - 不需要 grounding 的动作(NO_TARGET)               │
 │          → 直接使用 action.params                       │
-│   7. 安全拦截 SafetyGuard.check(action, ocr_result)     │
-│        命中黑名单 → VLM 二次确认(§9.2)                   │
-│        二次确认仍危险 → 中止,上报 ABORT:UNSAFE           │
+│   7. 安全拦截：                                          │
+│        verdict = SafetyGuard.check(                     │
+│          action, coords,   # coords=None 时为 NO_TARGET  │
+│          ocr_result, goal, session_ctx                  │
+│        )                                                │
+│        verdict.blocked → 中止,上报 ABORT:UNSAFE          │
 │   8. desktop_control.execute(action)                    │
 │   9. 等待 wait_ms (默认 500ms,可动态调整)                │
 │   10. history.append({step_idx, action, result})        │
@@ -288,9 +291,10 @@ v1.0 里 `visual_region_changed` / `ai_judge` 等 MVP 不做。
 ```
 
 说明：
-- **步 2 的 OCR 结果在本步内复用**：终止检查（错误弹窗）、安全拦截（黑名单匹配）、grounding fallback、断言判定 都读同一份缓存，避免重复调用。
+- **步 2 的 OCR 是同步调用**，一次执行后结果缓存供本步多个环节（终止检查、安全拦截、grounding fallback、断言判定）复用，不重复调用。
 - **步 4 的 `target_desc`** 对 NO_TARGET 类动作设为 `null`。Planner 必须在 prompt 中被告知哪些动作不需要目标。
-- **步 7 的安全拦截**见 §9，对 NO_TARGET 动作也要检查（例如 `type` 的文本内容）。
+- **步 6 得到的 `coords`** 为物理像素坐标（见 §6.4.1），传给步 7 的 SafetyGuard 和步 8 的 ActionExecutor。
+- **步 7 的 `goal` 和 `session_ctx`** 是 VLM 二次确认（§9.2）和超限追踪所必须的参数，见 §9。
 
 ### 5.3 终止条件
 
@@ -312,7 +316,7 @@ v1.0 里 `visual_region_changed` / `ai_judge` 等 MVP 不做。
 与探索模式共用主循环，但有两点差异：
 
 1. **Planner 不用大模型**：直接读取 `recordings/*.json` 的 `steps`，按 idx 顺序吐出 `next_intent`。
-2. **每步都做预期校验**：执行前比对当前截图与 `expect.screenshot_hash` 的 SSIM，若连续 2 步 SSIM < 0.5 → 判定 UI 大改 → 中止回归 → 回落到探索模式（见 §4.2）。
+2. **每步都做预期校验**：执行前比对当前截图与 `expect.screenshot_hash` 的 SSIM，若连续 2 步 SSIM < 0.5 → 判定 UI 大改 → 中止回归 → 回落到探索模式（实现见任务文档 T G.6）。
 
 ### 5.5 动作分类
 
@@ -343,7 +347,7 @@ v1.0 里 `visual_region_changed` / `ai_judge` 等 MVP 不做。
 | 层 | 用途 | 何时调用 |
 |---|------|---------|
 | **截图** | 所有感知与决策的输入 | 每步循环开始 + 每次动作后 |
-| **OCR (PaddleOCR)** | 文字识别、OCR 断言、VLM grounding 失败时的 fallback 定位、错误弹窗检测 | 每步 1 次（异步，不阻塞 Planner） |
+| **OCR (PaddleOCR)** | 文字识别、OCR 断言、VLM grounding 失败时的 fallback 定位、错误弹窗检测 | 每步 1 次（**同步**，在主循环步 2 执行，结果缓存供本步内所有组件复用） |
 | **VLM grounding (Actor)** | 元素定位，输入自然语言描述 → 输出坐标 | 每个需要定位的动作前 1 次 |
 | **模板匹配 (OpenCV SSIM)** | 截图相似度计算（终止条件、回归校验、视觉断言） | 终止检查 + 回归校验 |
 
@@ -370,6 +374,22 @@ Actor 执行定位时，按顺序尝试：
 - MVP 用 `mss` 库做截图（比 `pyautogui.screenshot` 快一个数量级）。
 - 送 VLM 前压缩到短边 1080px，JPEG quality 85。
 - OCR 用原分辨率（精度优先）。
+
+### 6.4.1 VLM 坐标还原规则（强约束）
+
+VLM grounding 模型（如 ShowUI）输入的是压缩后图像，输出的是归一化坐标 `(x_norm, y_norm) ∈ [0, 1]`。**所有后续步骤使用的坐标必须还原为物理像素**，还原公式如下：
+
+```
+原始截图尺寸：W_phys × H_phys（mss 采集的物理像素）
+压缩后尺寸：  W_vlm × H_vlm（短边 = 1080px）
+压缩率：      scale = 1080 / min(W_phys, H_phys)
+
+VLM 输出：    (x_norm, y_norm)
+压缩图坐标：  x_vlm = x_norm × W_vlm,  y_vlm = y_norm × H_vlm
+物理像素坐标：x_phys = x_vlm / scale,  y_phys = y_vlm / scale
+```
+
+`Actor.locate()` **必须返回物理像素坐标**，不得返回 VLM 内部坐标。还原逻辑在 ShowUI grounding 后端（T D.5）内完成，调用方无需感知。
 
 ---
 
@@ -662,6 +682,12 @@ MVP 暂不实现，但预留接口：
 - **成功报告**：仅返回第一步和最后一步截图（节省体积）
 - **失败报告**：返回失败步骤前后各 2 步的截图（共最多 5 张），保证 AI 能看到失败上下文
 - 通过 MCP 的 resource 机制投递时，优先走 resource URI 而不是 base64（减少 token 消耗）
+
+**截图编码规格**：
+- 每张投递图：JPEG，quality 85，短边 1080px（与送 VLM 的版本一致，已在采集时备好）
+- base64 后单张约 200–400 KB
+- 整个报告 JSON（含 base64）不超过 **5 MB**；超出时自动降级为 resource URI 模式（仅返回本地路径）
+- MCP resource 模式无大小限制，优先采用
 
 ### 11.4 Evidence 存储与清理
 

@@ -459,7 +459,7 @@ vLLM 作为**独立进程运行**，不作为 Python 依赖直接装入主环境
 
 ## T B.7 动作执行器
 
-**依赖**：T B.3, T B.4
+**依赖**：T B.3, T B.4, T B.5, T B.6
 
 **范围**：
 - `src/autovisiontest/control/executor.py`（新建）
@@ -468,12 +468,28 @@ vLLM 作为**独立进程运行**，不作为 Python 依赖直接装入主环境
 
 **交付物**：
 - `control/actions.py`：Pydantic 模型
-  - `Action`：`type: Literal["click", "double_click", "right_click", "drag", "scroll", "type", "key_combo", "wait"]`, `params: dict`
+  - `Action`：
+    ```python
+    class Action(BaseModel):
+        type: Literal[
+            # NEED_TARGET（需要 coords / grounding）
+            "click", "double_click", "right_click", "drag", "scroll_at",
+            # NO_TARGET（直接用 params，无需 grounding）
+            "type", "key_combo", "wait", "scroll",
+            # META（应用级操作）
+            "launch_app", "close_app", "focus_window",
+        ]
+        params: dict  # 按 type 不同而不同（见产品文档 §5.5 & §7.1）
+    
+    NEED_TARGET_ACTIONS = frozenset({"click", "double_click", "right_click", "drag", "scroll_at"})
+    NO_TARGET_ACTIONS   = frozenset({"type", "key_combo", "wait", "scroll"})
+    META_ACTIONS        = frozenset({"launch_app", "close_app", "focus_window"})
+    ```
   - `class ActionResult: success: bool, error: str | None, duration_ms: int`
 - `control/executor.py`：
   - `class ActionExecutor`
   - `def execute(action: Action, coords: tuple[int, int] | None = None) -> ActionResult`
-  - 内部按 `action.type` 分派到 `mouse`/`keyboard` 模块；NEED_TARGET 类必须传 coords
+  - 内部按 `action.type` 分派到 `mouse`/`keyboard`/`window`/`process` 模块；NEED_TARGET 类必须传 coords
   - 失败时抛 `ActionExecutionError`，包含 action 和原始异常
 
 **测试项**：
@@ -797,9 +813,18 @@ vLLM 作为**独立进程运行**，不作为 Python 依赖直接装入主环境
 **交付物**：
 - `ShowUIGroundingBackend`（实现 `GroundingBackend`）
 - 调用本地 vLLM 加载的 ShowUI-2B
-- `ground(image, query)`：构造 ShowUI 专用 prompt（参考论文格式），解析输出坐标
-- 坐标解析：ShowUI 输出相对坐标（0-1），转换为绝对像素
-- confidence：若模型输出包含 bbox/logprob 则使用，否则简化为 1.0 - (重复查询 N 次坐标方差 / diagonal)。MVP 先用固定 0.8（带 TODO 注释），待 prompt engineering 阶段完善
+- `ground(image: bytes, query: str, original_size: tuple[int, int]) -> GroundingResult`
+  - `image`：已压缩到短边 1080px 的 JPEG 字节（`W_vlm × H_vlm`）
+  - `original_size`：采集时的物理像素尺寸 `(W_phys, H_phys)`，用于坐标还原
+  - 构造 ShowUI 专用 prompt（参考论文格式），解析输出坐标
+  - **坐标还原（强约束，见产品文档 §6.4.1）**：
+    ```python
+    scale = 1080 / min(W_phys, H_phys)
+    x_phys = int(x_norm * W_vlm / scale)
+    y_phys = int(y_norm * H_vlm / scale)
+    ```
+    返回物理像素坐标，绝不返回归一化或 VLM 内部坐标
+- confidence：MVP 先用固定 0.8（带 TODO 注释），待 prompt engineering 阶段完善
 
 **测试项**：
 - mock vLLM，验证 prompt 构造 + 坐标解析
@@ -1075,11 +1100,12 @@ vLLM 作为**独立进程运行**，不作为 Python 依赖直接装入主环境
 - `class Actor`
 - 构造参数：`grounding_backend: GroundingBackend`, `confidence_threshold: float = 0.6`, `max_planner_retries: int = 2`
 - `def locate(snapshot: FrameSnapshot, target_desc: str, on_retry: Callable | None = None) -> LocateResult`
-  - 1. 调 grounding → 若 confidence ≥ threshold 返回
+  - 1. 调 grounding（传入 `snapshot.image_vlm` + `snapshot.original_size`）→ 若 confidence ≥ threshold 返回
   - 2. OCR fallback：如 `target_desc` 含引号字符串，OCR 查找中心点
   - 3. 若两者都失败，调 `on_retry`（由 engine 提供，让 Planner 重试）最多 `max_planner_retries` 次
   - 4. 仍失败返回 `LocateResult(success=False, ...)`
 - `LocateResult`：`success: bool, x: int | None, y: int | None, source: "grounding"|"ocr"|"retry", confidence: float`
+  - **`x, y` 为物理像素坐标**（由 grounding 后端 T D.5 在内部完成还原，调用方无需换算）
 
 **测试项**：
 - `test_locate_grounding_success`
@@ -1440,8 +1466,9 @@ vLLM 作为**独立进程运行**，不作为 Python 依赖直接装入主环境
 **交付物**：
 - `class ReportBuilder`
 - `def build(session: SessionContext, evidence_dir: Path, include_base64: bool = True) -> Report`：
-  - 按截图投递策略（§11.3）选择 key_evidence
-  - 成功仅首尾、失败取失败点前后各 2 步
+  - 按截图投递策略（产品文档 §11.3）选择 key_evidence
+  - 成功仅首尾、失败取失败点前后各 2 步（最多 5 张）
+  - `include_base64=True` 时：计算 base64 总大小，若超过 **5 MB** 自动降级为 resource URI 模式
   - `include_base64=False` 时仅填路径，由 MCP resource 负责投递
 - `def to_json(report: Report, pretty: bool = True) -> str`
 - `def to_html(report: Report) -> str`（简易可选，MVP 可桩实现）
