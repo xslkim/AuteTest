@@ -368,3 +368,69 @@ export function parseScriptJson(data: unknown): Script {
 export function assertCompiledScript(data: unknown): asserts data is CompiledScript {
   compiledScriptSchema.parse(data);
 }
+
+const renderInputBlockSchema = compiledBlockSchema.extend({
+  visual: z.object({
+    description: z.string(),
+    componentPath: z.string().min(1),
+  }),
+  audio: z
+    .object({
+      wavPath: z.string(),
+      durationSec: z.number(),
+      lineTimings: z.array(
+        z.object({
+          lineIndex: z.number(),
+          startMs: z.number(),
+          endMs: z.number(),
+        }),
+      ),
+    })
+    .strict(),
+  timing: z
+    .object({
+      enterSec: z.number(),
+      holdSec: z.number(),
+      exitSec: z.number(),
+      totalSec: z.number(),
+      frames: z.number(),
+      enterFrames: z.number(),
+    })
+    .optional(),
+  render: z
+    .object({
+      partialPath: z.string(),
+      cacheHit: z.boolean(),
+    })
+    .optional(),
+});
+
+const renderInputScriptSchema = z
+  .object({
+    meta: z.object({
+      schemaVersion: z.literal("1.0"),
+      title: z.string(),
+      voiceRef: z.string(),
+      aspect: z.enum(["16:9", "9:16", "1:1"]),
+      width: z.number(),
+      height: z.number(),
+      fps: z.number(),
+      theme: z.string(),
+      subtitleSafeBottom: z.number(),
+    }),
+    blocks: z.array(renderInputBlockSchema),
+    artifacts: z
+      .object({
+        compiledAt: z.string().optional(),
+        audioGeneratedAt: z.string().optional(),
+        visualsGeneratedAt: z.string().optional(),
+        renderedAt: z.string().optional(),
+      })
+      .strict(),
+    assets: z.record(z.string()),
+  })
+  .strict();
+
+export function assertRenderInputScript(data: unknown): asserts data is RenderInputScript {
+  renderInputScriptSchema.parse(data);
+}

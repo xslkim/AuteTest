@@ -155,6 +155,7 @@ describe.skipIf(!runIntegration)("renderBlockPartials integration", () => {
       remotionVersion,
       render: { ...DEFAULT_RENDER, blockConcurrency: 2, framesConcurrencyPerBlock: 1 },
       cacheEvictOnStageStart: false,
+      forcePartialAll: false,
       verbose: false,
     });
 
@@ -214,6 +215,7 @@ describe.skipIf(!runIntegration)("renderBlockPartials integration", () => {
       remotionVersion,
       render: { ...DEFAULT_RENDER, blockConcurrency: 2, framesConcurrencyPerBlock: 1 },
       cacheEvictOnStageStart: false,
+      forcePartialAll: false,
       verbose: false,
     });
 

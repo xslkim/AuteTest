@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { copyFile, mkdir, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import os from "node:os";
@@ -42,8 +42,12 @@ export interface RenderBlocksOptions {
   render: RenderSection;
   /** `cache.evictTrigger === "stage-start"` 时为 true */
   cacheEvictOnStageStart: boolean;
-  /** 全部块强制 partial cache miss */
-  forcePartial?: boolean;
+  /** 不带 `--block` 时与 `--force` 组合：全部块强制 partial cache miss */
+  forcePartialAll?: boolean;
+  /** `--block` 与 `--force` 组合：仅这些块强制 partial cache miss */
+  forcePartialBlockIds?: ReadonlySet<string> | null;
+  /** 仅渲染这些块（其它块跳过 Remotion，保留磁盘上已有 partial） */
+  renderOnlyBlockIds?: ReadonlySet<string> | null;
   verbose?: boolean;
 }
 
@@ -102,7 +106,9 @@ export async function renderBlockPartials(options: RenderBlocksOptions): Promise
     remotionVersion,
     render,
     cacheEvictOnStageStart,
-    forcePartial = false,
+    forcePartialAll = false,
+    forcePartialBlockIds = null,
+    renderOnlyBlockIds = null,
     verbose = false,
   } = options;
 
@@ -213,6 +219,21 @@ export async function renderBlockPartials(options: RenderBlocksOptions): Promise
     const partialRel = posixRel(["output", "partials", `${block.id}.mp4`]);
     const partialAbs = path.join(buildOutDirAbs, "output", "partials", `${block.id}.mp4`);
 
+    if (renderOnlyBlockIds != null && !renderOnlyBlockIds.has(block.id)) {
+      if (!existsSync(partialAbs)) {
+        failAll(
+          new Error(
+            `missing partial for skipped block ${block.id}: ${partialRel}\nResume: autovideo render <script.json> --block ${block.id} --force`,
+          ),
+        );
+      }
+      block.render = { partialPath: partialRel, cacheHit: true };
+      if (verbose) {
+        console.error(`[render-blocks] ${block.id} skipped (--block), reuse existing ${partialRel}`);
+      }
+      return;
+    }
+
     const { cacheKeyHex, manifestKey } = computePartialCacheBundle({
       block,
       scriptTheme: script.meta.theme,
@@ -223,7 +244,11 @@ export async function renderBlockPartials(options: RenderBlocksOptions): Promise
       remotionVersion,
     });
 
-    if (!forcePartial) {
+    const forceThisPartial =
+      forcePartialAll ||
+      (forcePartialBlockIds != null && forcePartialBlockIds.has(block.id));
+
+    if (!forceThisPartial) {
       const cached = await cacheStore.get("partial", cacheKeyHex);
       if (cached != null) {
         await mkdir(path.dirname(partialAbs), { recursive: true });
