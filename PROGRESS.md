@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T9.3`
-- **last_updated**: `2026-05-03T14:40:00Z`
-- **next_action**: `开始 T9.3 — install.sh`
+- **last_updated**: `2026-05-03T16:00:00Z`
+- **next_action**: `实现并验收 install.sh`
 - **completed**: `38 / 40`
 - **blockers**: `0`
 
@@ -18,7 +18,7 @@
 2. [ ] 已读 `TASKS.md` 全文
 3. [ ] 已读本文件，确认 `active_task` 与 `next_action`
 4. [ ] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致
+5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（合并提交通常以主线为准；`install.sh` 起算自本任务 start commit）
 
 ---
 
@@ -67,7 +67,7 @@
 | T8.3 | init + templates | done | 2026-05-02T18:00:00Z | 2026-05-02T18:22:00Z | 3a29403 | `init <dir> [--force]`；目标不存在时创建父目录 |
 | T9.1 | 单测补全 | done | 2026-05-03T12:00:00Z | 2026-05-03T13:25:00Z | e0e3b70 | 合并为 `parser.test.ts` / `cache.test.ts` / `tts-timings.test.ts`；`cache` CLI 单测 |
 | T9.2 | E2E 测试 | done | 2026-05-03T14:00:00Z | 2026-05-03T14:40:00Z | f67844c | `npm run test:e2e`；QA 用视频轨时长 + ±2 帧 |
-| T9.3 | install.sh | pending | — | — | — | — |
+| T9.3 | install.sh | in_progress | 2026-05-03T16:00:00Z | — | — | — |
 | T9.4 | 文档 | pending | — | — | — | — |
 
 ---
