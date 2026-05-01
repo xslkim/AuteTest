@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:05:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin/autovideo.ts / .gitignore，验收后标记 done`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T13:15:00Z`
+- **next_action**: `开始 T0.2 — 类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:05:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T13:15:00Z | a876d5fc43ed4b2a660f203d6fe7edeb105e39b8 | PRD Remotion GOP：24cd0c3 |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ a876d5fc43ed4b2a660f203d6fe7edeb105e39b8
+
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且 stderr 含 `not implemented` → ✓
+- artifacts: `package.json` / `tsconfig.json` / `remotion.config.ts` / `.gitignore` / `bin/autovideo.ts` / `package-lock.json`
 
 ---
 
@@ -130,5 +133,14 @@
 > - 实际实现：<...>
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
+
+### T0.1 | §6.4 step 6 / GOP | remotion.config 不再调用 `Config.setKeyframeInterval`
+
+- PRD 原描述：`remotion.config.ts` 使用 `Config.setKeyframeInterval(1)`（源自 `remotion` 包的 `Config`）。
+- 实际实现：`Config` 自 `@remotion/cli/config` 导入；libx264 编码通过 `overrideFfmpegCommand` 注入 `-g 1 -keyint_min 1`，并 `setVideoImageFormat('jpeg')`。
+- 原因：Remotion 4.x 将 CLI 配置移出 core；从 `remotion` 导入的 `Config` 为 Proxy，不含 `setKeyframeInterval`。
+- PRD 是否同步更新：是（见 24cd0c3a2a8110bb39fa7971f66d1260da17a071）
+
+---
 
 （开发中由 agent 追加）
