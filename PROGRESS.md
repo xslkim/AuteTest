@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin/autovideo / .gitignore`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T13:30:00Z`
+- **next_action**: `开始 T0.2（类型定义 + Schema）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:00:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:00:00Z | 2026-05-01T13:30:00Z | b0f032f | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ b0f032f
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`；修订 `PRD.md` §6.4 step 6、`TASKS.md` T0.1
+- 备注：`@remotion/cli` 为 `remotion.config.ts` 所需（PRD §13.1 依赖表未单独列出）
 
 ---
 
@@ -97,7 +100,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 13:30 | T0.1
+- 模糊点：`package.json`「按 PRD §13.1 完整拷贝」是否应包含 `remotion.config.ts` 所用 `@remotion/cli/config` 依赖
+- 选择方案：在 `dependencies` 中加入 `@remotion/cli`（与已锁 Remotion 4 次版本一致）
+- 备选方案：不声明该包、仅用类型断言或把配置挪到别处 — 会在 `tsc` / 运行期解析失败
+- 影响范围：仅 package 依赖声明；后续 Remotion CLI 子命令也可共用
 
 ---
 
@@ -131,4 +138,8 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | PRD §6.4 step 6 / TASKS T0.1 | Remotion 4 无 `Config.setKeyframeInterval`
+- PRD 原描述：`remotion.config.ts` 中 `setKeyframeInterval(1)` 保证每段 mp4 首帧 IDR
+- 实际实现：`remotion.config.ts` 仅 `Config.setVideoImageFormat('jpeg')`；GOP/IDR 在后续 render 阶段用编码参数保证（见更新后 PRD 表述）
+- 原因：当前安装的 `@remotion/cli@4.x` 类型与运行时代码均无 `setKeyframeInterval`
+- PRD 是否同步更新：是（b0f032f）
