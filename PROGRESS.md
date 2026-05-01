@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T7.1`
-- **last_updated**: `2026-05-02T12:10:00Z`
-- **next_action**: `实现 src/preview/root-preview.ts + BlockComposition 无 audio 占位字幕；验收快照`
-- **completed**: `31 / 35`
+- **active_task**: `T7.2`
+- **last_updated**: `2026-05-02T12:42:00Z`
+- **next_action**: `开始 T7.2 — preview 命令`
+- **completed**: `32 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -60,7 +60,7 @@
 | T6.5 | loudnorm two-pass | done | 2026-05-01T21:05:00Z | 2026-05-01T21:25:00Z | fac3410 | `twoPass:false` 为 copy；`inf` 测量显式报错 |
 | T6.6 | 质量校验 | done | 2026-05-01T22:00:00Z | 2026-05-01T22:30:00Z | 779356a | `validateFinalNormalizedVideo`：Σ`timing.frames`/fps ±1 帧、5 段内等距抽样 |
 | T6.7 | render 命令组装 | done | 2026-05-01T23:50:00Z | 2026-05-01T23:58:00Z | 7e33deb | `renderInputSchema` 允许块上可选 `timing`/`render` 以便已完成一轮的 script.json 再次 `render` |
-| T7.1 | Root.tsx 生成器（preview 模式） | in_progress | 2026-05-02T12:10:00Z | — | — | — |
+| T7.1 | Root.tsx 生成器（preview 模式） | done | 2026-05-02T12:10:00Z | 2026-05-02T12:42:00Z | 17353aa | per-block Composition；无有效 lineTimings 时均匀占位字幕 |
 | T7.2 | preview 命令 | pending | — | — | — | — |
 | T8.1 | build orchestrator | pending | — | — | — | — |
 | T8.2 | doctor | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T7.1 — Root.tsx 生成器（preview 模式） @ 17353aa
+- acceptance: 单测 snapshot Root.tsx 字符串 → ✓；`npm run build` + `npm run test` → ✓
+- artifacts: `src/preview/root-preview.ts` / `remotion/VideoComposition.tsx`（`previewCompositionDurationFrames`、`uniformLineTimingsForPreview`、无 TTS 时不挂 `<Audio>`）/ `tests/root-preview.test.ts` / `tests/video-composition-preview.test.ts`
+- 备注：`hasAudio` 需块含非空 `audio.lineTimings`；预览时长与块内 fallback timing 对齐
 
 ### T6.7 — render 命令组装 @ 7e33deb
 - acceptance: mock E2E → `output/final_normalized.mp4`；`--block B01 --force` 仅 1 次 `renderMedia` 且 B02 partial mtime 不变 → ✓；`npm run build` + `npm run test` → ✓
@@ -249,6 +254,12 @@
 > - 选择方案：<采纳的实现>
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
+
+### 2026-05-02 12:38 | T7.1
+- 模糊点：PRD §6.5「均匀分配」未给出毫秒边界公式。
+- 选择方案：`holdMs = (holdFrames/fps)*1000`，`n` 行时 `slice = holdMs/n`，`startMs = round(i*slice)`，`endMs = round((i+1)*slice)`，末行 `endMs = round(holdMs)`。
+- 备选方案：仅用帧换算 ms — 与 `SubtitleOverlay` 的 ms 轴一致即可，当前做法更简单。
+- 影响范围：`BlockComposition` 预览字幕；render 仍有 TTS 真 timing。
 
 ### 2026-05-01 23:55 | T6.7
 - 模糊点：TASKS 写入口校验 `RenderInputScript`「timing 尚未计算」；完成后磁盘 script 含 `timing`/`render`，再次运行 `render`（增量）必须仍能解析。
