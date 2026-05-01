@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T7.2`
-- **last_updated**: `2026-05-02T14:00:00Z`
-- **next_action**: `实现 preview CLI：生成 remotion-root-preview.tsx、spawn Remotion Studio`
-- **completed**: `32 / 35`
+- **active_task**: `T8.1`
+- **last_updated**: `2026-05-02T14:30:00Z`
+- **next_action**: `开始 T8.1 — build orchestrator`
+- **completed**: `33 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -61,7 +61,7 @@
 | T6.6 | 质量校验 | done | 2026-05-01T22:00:00Z | 2026-05-01T22:30:00Z | 779356a | `validateFinalNormalizedVideo`：Σ`timing.frames`/fps ±1 帧、5 段内等距抽样 |
 | T6.7 | render 命令组装 | done | 2026-05-01T23:50:00Z | 2026-05-01T23:58:00Z | 7e33deb | `renderInputSchema` 允许块上可选 `timing`/`render` 以便已完成一轮的 script.json 再次 `render` |
 | T7.1 | Root.tsx 生成器（preview 模式） | done | 2026-05-02T12:10:00Z | 2026-05-02T12:42:00Z | 17353aa | per-block Composition；无有效 lineTimings 时均匀占位字幕 |
-| T7.2 | preview 命令 | in_progress | 2026-05-02T14:00:00Z | — | — | — |
+| T7.2 | preview 命令 | done | 2026-05-02T14:00:00Z | 2026-05-02T14:30:00Z | f47458a | `remotion-root-preview.tsx`；`AUTVIDEO_REMOTION_ENTRY`；`--block` 默认 `--port=3333` + `xdg-open` |
 | T8.1 | build orchestrator | pending | — | — | — | — |
 | T8.2 | doctor | pending | — | — | — | — |
 | T8.3 | init + templates | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T7.2 — preview 命令 @ f47458a
+- acceptance: 生成 `remotion-root-preview.tsx` + Studio spawn；`--block` 定位 → ✓（默认 `--port=3333` 并 `xdg-open /{blockId}`；可用 `AUTVIDEO_PREVIEW_OPEN=0` 禁用）；`npm run build` + `npm run test` → ✓
+- artifacts: `src/cli/preview.ts` / `remotion.config.ts`（`AUTVIDEO_REMOTION_ENTRY` + `Config.setEntryPoint`）/ `bin/autovideo.ts` / `tests/preview-cli.test.ts`
+- 备注：preview 写 `public/script.json` 与 `src/remotion-block-imports.ts`；`--block` 仅允许单 ID；无 `--block` 时不绑端口由 Remotion 自选
 
 ### T7.1 — Root.tsx 生成器（preview 模式） @ 17353aa
 - acceptance: 单测 snapshot Root.tsx 字符串 → ✓；`npm run build` + `npm run test` → ✓
@@ -254,6 +259,12 @@
 > - 选择方案：<采纳的实现>
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
+
+### 2026-05-02 14:28 | T7.2
+- 模糊点：TASKS 写 `--block` 经 query string 或默认 Composition；Remotion Studio 路由为 pathname 末段（如 `/B03`）。
+- 选择方案：未显式 `--port` 且带 `--block` 时默认 `--port=3333`，约 2.5s 后 `xdg-open http://localhost:3333/{blockId}`（`AUTVIDEO_PREVIEW_OPEN=0` 可关）；用户亦可自开该 URL。
+- 备选方案：仅打印提示 — 验收要求「直接定位」体验差。
+- 影响范围：仅 `src/cli/preview.ts`。
 
 ### 2026-05-02 12:38 | T7.1
 - 模糊点：PRD §6.5「均匀分配」未给出毫秒边界公式。
