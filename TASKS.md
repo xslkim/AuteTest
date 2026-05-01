@@ -14,7 +14,7 @@
 **做什么**：
 - `package.json` 字段按 `@PRD.md` §13.1 完整拷贝（含 `@remotion/google-fonts`、`ms`、`p-limit` 等）；`type: "module"`；`bin: { autovideo: "dist/bin/autovideo.js" }`
 - `tsconfig.json`：`target: ES2022`、`module: NodeNext`、`moduleResolution: NodeNext`、`strict: true`、`esModuleInterop: true`、`outDir: dist`、`rootDir: .`
-- `remotion.config.ts`：`Config.setKeyframeInterval(1)`（保证 §6.4 step 6 GOP 起点对齐 IDR）+ `Config.setVideoImageFormat('jpeg')`
+- `remotion.config.ts`：`Config` 来自 `@remotion/cli/config`（Remotion v4）；`Config.overrideFfmpegCommand` 对 libx264 注入 `-g 1 -keyint_min 1`（保证 §6.4 step 6 GOP 起点对齐 IDR，等价于早期 `setKeyframeInterval(1)`）+ `Config.setVideoImageFormat('jpeg')`
 - `bin/autovideo.ts`：commander.js 注册 8 个子命令的 stub（`build` / `compile` / `tts` / `visuals` / `render` / `preview` / `cache` / `doctor` / `init`），全部抛 "not implemented"
 - `.gitignore`：`node_modules/`、`dist/`、`build/`、`.cache/`、`*.log`
 
