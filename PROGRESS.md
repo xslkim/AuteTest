@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin stub / .gitignore，验收后 chore(T0.1): done`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:45:00Z`
+- **next_action**: `按 TASKS.md 开始 T0.2（类型定义 + Schema）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:00:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:00:00Z | 2026-05-01T12:45:00Z | c503401 | npm install / tsx CLI 验收通过 |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,11 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ c503401
+
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 展示全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`
+- 备注：CI 环境需 Node ≥20；本机 apt 安装为 v18，安装与 `tsc`/验收通过，后续 `doctor`/CI 应按 PRD 校验 v20。
 
 ---
 
