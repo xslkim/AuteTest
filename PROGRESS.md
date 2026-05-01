@@ -131,4 +131,10 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | §6.4 GOP / IDR | Remotion API 命名
+- PRD 原描述：`remotion.config.ts` 使用 `Config.setKeyframeInterval(1)`。
+- 实际实现：Remotion 4 `@remotion/cli/config` 的 `FlatConfig` 无此方法；改用 `Config.overrideFfmpegCommand`，在 `pre-stitcher` 且 `-c:v libx264` 时插入 `-x264-params keyint=1:min-keyint=1:scenecut=0:no-mbtree=1`。
+- 原因：与当前依赖的 Remotion v4 API 对齐，仍达成每帧 IDR 以满足 concat。
+- PRD 是否同步更新：是（与同任务 PRD / TASKS 修订一并提交）。
+
+（下文待后续任务追加）
