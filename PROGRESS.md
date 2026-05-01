@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T5.1`
-- **last_updated**: `2026-05-02T12:45:00Z`
-- **next_action**: `开始 T5.1 — theme + 字体加载`
-- **completed**: `20 / 35`
+- **active_task**: `T5.2`
+- **last_updated**: `2026-05-01T11:22:09Z`
+- **next_action**: `开始 T5.2 — SubtitleOverlay`
+- **completed**: `21 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -49,7 +49,7 @@
 | T4.3 | 子进程隔离工具 | done | 2026-05-01T20:20:00Z | 2026-05-01T21:05:00Z | c1c87ef | `memLimitBytes`/`cpuLimitSec` 可覆盖；默认 8GiB / 600s |
 | T4.4 | 验证（tsc + render smoke） | done | 2026-05-01T22:30:00Z | 2026-05-01T23:14:00Z | f0e887b | `RUN_VISUAL_VALIDATE=0` 跳过 render 集成 |
 | T4.5 | visuals 命令组装 | done | 2026-05-02T12:00:00Z | 2026-05-02T12:45:00Z | 7eb5c3f | `CompiledBlock` 允许可选 `audio` + `visual.componentPath`；生成顺序执行以满足「失败不启下一块」验收 |
-| T5.1 | theme + 字体加载 | pending | — | — | — | — |
+| T5.1 | theme + 字体加载 | done | 2026-05-01T11:19:15Z | 2026-05-01T11:22:09Z | 84723da | `getTheme`；Noto Sans SC + Noto Color Emoji + JetBrains Mono |
 | T5.2 | SubtitleOverlay | pending | — | — | — | — |
 | T5.3 | BlockFrame + animations | pending | — | — | — | — |
 | T5.4 | BlockComposition（render 用） | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T5.1 — theme + 字体加载 @ 84723da
+- acceptance: `tsc --noEmit` 零错误 → ✓；`getTheme('dark-code').subtitle.fontFamily` 含 `"Noto Sans SC"` → ✓；`npm run test` → ✓
+- artifacts: `remotion/engine/theme.ts` / `src/ai/validate.ts` / `src/cli/visuals.ts` / `tests/theme.test.ts` / `tests/visuals-cli.test.ts`（延长超时）
+- 备注：`loadFont` 指定字重与子集并 `ignoreTooManyRequestsWarning`；未知 `meta.theme` 时 prompt 仍用 dark-code token、仅覆盖 `name`
 
 ### T4.5 — visuals 命令组装 @ 7eb5c3f
 - acceptance: mock Claude：首轮 tsc 错 → 第二轮通过 → 组件落盘 + `script.json` 含 `componentPath` → ✓；3 轮皆败 → 退出抛错、`generateComponentTsx` 未调用第二块 → ✓；`npm run test` + `npm run build` → ✓
@@ -278,6 +283,12 @@
 - 选择方案：`memLimitBytes` 默认 8GiB、`cpuLimitSec` 默认 600，二者均可通过 `RunIsolatedOptions` 覆盖。
 - 备选方案：不设默认迫使调用方每次传入 — 过早对接 T4.4/T4.5 时噪声大。
 - 影响范围：仅 `runIsolated`；最终 render 子进程可在调用处放宽上限。
+
+### 2026-05-01 11:22 | T5.1
+- 模糊点：TASKS 要求 emoji 走 `Noto Color Emoji`，PRD `Theme.fonts.mono` 未锁定具体族名。
+- 选择方案：`fonts.mono` 使用 `JetBrains Mono`（`@remotion/google-fonts/JetBrainsMono`），与代码教学场景一致；`loadFont` 仅拉 latin/latin-ext/cyrillic 子集与 400 字重。
+- 备选方案：`fonts.mono` 仍用 `monospace` 通用族 — 与 CJK 混排时跨机 fallback 不一致。
+- 影响范围：仅 `remotion/engine/theme.ts`；后续主题可另定 mono。
 
 ### 2026-05-01 19:10 | T4.2
 - 模糊点：TASKS 固定「system prompt 标 ephemeral」；PRD §9 另有 `anthropic.promptCaching` 开关。

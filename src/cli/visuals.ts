@@ -22,6 +22,7 @@ import {
   type ValidateRenderSmokeResult,
   type ValidateStaticResult,
 } from "../ai/validate.js";
+import { getTheme } from "../../remotion/engine/theme.js";
 import type { Theme } from "../types/script.js";
 import { CacheStore } from "../cache/store.js";
 import { loadResolvedCliConfig } from "../config/load.js";
@@ -154,34 +155,13 @@ function appendLog(buildOutDir: string, line: string): void {
   appendFileSync(logFile, `${new Date().toISOString()}\t${line}\n`, "utf8");
 }
 
-/** 与 validate smoke 对齐的最小 Theme JSON（名称取自 script.meta.theme） */
+/** 与 validate smoke 及宿主 theme 模块对齐（名称取自 script.meta.theme）。 */
 function themeJsonForPrompt(themeName: string): Theme {
-  return {
-    name: themeName,
-    colors: {
-      bg: "#0d1117",
-      fg: "#e6edf3",
-      accent: "#58a6ff",
-      muted: "#8b949e",
-      code: {
-        bg: "#161b22",
-        fg: "#e6edf3",
-        keyword: "#ff7b72",
-        string: "#a5d6ff",
-        comment: "#8b949e",
-      },
-    },
-    fonts: { sans: "sans-serif", mono: "monospace" },
-    spacing: { unit: 8 },
-    subtitle: {
-      fontFamily: "sans-serif",
-      fontSizePct: 4.5,
-      lineHeight: 1.35,
-      maxWidthPct: 88,
-      backgroundColor: "rgba(0,0,0,0.55)",
-      paddingPx: 12,
-    },
-  };
+  try {
+    return getTheme(themeName);
+  } catch {
+    return { ...getTheme("dark-code"), name: themeName };
+  }
 }
 
 async function buildSystemPrompt(themeName: string): Promise<string> {

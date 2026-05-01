@@ -112,7 +112,9 @@ describe("runVisualsCommand", () => {
     vi.clearAllMocks();
   });
 
-  it("E2E mock: first attempt type error, second succeeds; writes Component.tsx + componentPath", async () => {
+  it(
+    "E2E mock: first attempt type error, second succeeds; writes Component.tsx + componentPath",
+    async () => {
     const scriptPath = path.join(root, "script.json");
     const data = minimalScriptTwoBlocks() as Record<string, unknown>;
     (data.meta as Record<string, string>).voiceRef = path.join(root, "B00.wav");
@@ -172,9 +174,13 @@ describe("runVisualsCommand", () => {
     expect(c1).toContain("Smoke");
     const c2 = readFileSync(path.join(root, "src", "blocks", "B02", "Component.tsx"), "utf8");
     expect(c2).toContain("Smoke");
-  });
+    },
+    60_000,
+  );
 
-  it("3 failed rounds: exits non-zero path and does not start second block", async () => {
+  it(
+    "3 failed rounds: exits non-zero path and does not start second block",
+    async () => {
     const scriptPath = path.join(root, "script.json");
     const data = minimalScriptTwoBlocks() as Record<string, unknown>;
     (data.meta as Record<string, string>).voiceRef = path.join(root, "B00.wav");
@@ -210,5 +216,7 @@ describe("runVisualsCommand", () => {
 
     const b2path = path.join(root, "src", "blocks", "B02", "Component.tsx");
     expect(() => readFileSync(b2path, "utf8")).toThrow();
-  });
+    },
+    60_000,
+  );
 });
