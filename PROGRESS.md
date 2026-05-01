@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:30:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin 占位`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:45:00Z`
+- **next_action**: `类型定义与 JSON Schema（T0.2）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:30:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:30:00Z | 2026-05-01T12:45:00Z | 078bafd | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @078bafd
+- **acceptance**: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示所有子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 + "not implemented" → ✓
+- **artifacts**: `package.json` / `tsconfig.json` / `remotion.config.ts` / `.gitignore` / `bin/autovideo.ts` / `package-lock.json`
+- **备注**：需在 PATH 中包含 Node≥20（本环境 CI 若没有系统 Node，则用官方 tarball/`nvm`）。根 `tsconfig` 启用 `skipLibCheck` — 详见决策日志。
 
 ---
 
