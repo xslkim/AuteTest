@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T3.3`
-- **last_updated**: `2026-05-01T10:32:48Z`
-- **next_action**: `开始 T3.3 — ffmpeg helpers`
+- **last_updated**: `2026-05-01T12:00:00Z`
+- **next_action**: `实现并验收 src/tts/audio.ts（appendSilence / concatWavs / wavDurationSec）`
 - **completed**: `12 / 35`
 - **blockers**: `0`
 
@@ -41,7 +41,7 @@
 | T2.2 | cache CLI | done | 2026-05-02T00:15:00Z | 2026-05-02T10:25:00Z | 0aa039a | `clean --dry-run`；子命令 `allowUnknownOption` 以兼容 `--cache-dir` 位置 |
 | T3.1 | VoxCPM FastAPI wrapper | done | 2026-05-02T12:00:00Z | 2026-05-02T12:50:00Z | 769b75b | — |
 | T3.2 | voxcpm-client + autoStart | done | 2026-05-01T10:30:43Z | 2026-05-01T10:32:48Z | 3ac0baa | 集成测 `RUN_VOXCPM_INTEGRATION=1` |
-| T3.3 | ffmpeg helpers | pending | — | — | — | — |
+| T3.3 | ffmpeg helpers | in_progress | 2026-05-01T12:00:00Z | — | — | — |
 | T3.4 | lineTimings 计算 | pending | — | — | — | — |
 | T3.5 | tts 命令组装 | pending | — | — | — | — |
 | T4.1 | prompt + 组件骨架 | pending | — | — | — | — |
