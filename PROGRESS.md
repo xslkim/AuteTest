@@ -6,19 +6,19 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:05:00Z`
-- **next_action**: `实现仓库骨架并实现 bin/autovideo.ts stub`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:55:00Z`
+- **next_action**: `开始 T0.2 — 类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
 
-1. [ ] 已读 `PRD.md` 全文
-2. [ ] 已读 `TASKS.md` 全文
-3. [ ] 已读本文件，确认 `active_task` 与 `next_action`
+1. [x] 已读 `PRD.md` 全文
+2. [x] 已读 `TASKS.md` 全文
+3. [x] 已读本文件，确认 `active_task` 与 `next_action`
 4. [ ] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致
+5. [x] 已确认最近一次 **实现**提交 `git log --grep feat(T0.1)` 与表中 T0.1 Commit 列一致（`b8cc8ab`）；文档修订为独立 commit `419d678`
 
 ---
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:05:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T12:55:00Z | b8cc8ab | Remotion 4 无 setKeyframeInterval，见 PRD §6.4 与决策日志 |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ b8cc8ab
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 + 输出包含 `not implemented` → ✓
+- artifacts: `/workspace/package.json`；`/workspace/tsconfig.json`；`/workspace/remotion.config.ts`；`/workspace/.gitignore`；`/workspace/.npmrc`；`/workspace/bin/autovideo.ts`；`/workspace/package-lock.json`
+- 备注：PRD §6.4 GOP 说明已同步文档 commit `419d678`
 
 ---
 
@@ -97,7 +100,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 12:50 | T0.1
+- 模糊点：TASKS.md / 旧 PRD 写法要求 `Config.setKeyframeInterval(1)`；当前 `@remotion/cli` ^4.x 的 `Config` 无该方法。
+- 选择方案：`remotion.config.ts` 使用 `Config.overrideFfmpegCommand`，在 stitcher 对 `-c:v libx264` 插入 `-g 1 -keyint_min 1`，并修订 PRD §6.4。
+- 备选方案：沿用不存在的 API 会导致 `npm run build` 失败；仅设 JPEG 无法控制 GOP。
+- 影响范围：`remotion.config.ts` + PRD 文档；render 仍可满足 concat 前 IDR 对齐意图。
 
 ---
 
@@ -131,4 +138,8 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | §6.4 render / GOP | setKeyframeInterval 不存在
+- PRD 原描述：`remotion.config.ts` 中 `Config.setKeyframeInterval(1)`。
+- 实际实现：`Config.overrideFfmpegCommand` + libx264 `-g 1 -keyint_min 1`，并保留 `Config.setVideoImageFormat('jpeg')`。
+- 原因：Remotion 4 `Config` 未导出 `setKeyframeInterval`。
+- PRD 是否同步更新：是（`419d678`）
