@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T6.6`
-- **last_updated**: `2026-05-01T21:25:00Z`
-- **next_action**: `开始 T6.6 — 质量校验`
-- **completed**: `29 / 35`
+- **active_task**: `T6.7`
+- **last_updated**: `2026-05-01T22:35:00Z`
+- **next_action**: `开始 T6.7 — render 命令组装`
+- **completed**: `30 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -58,7 +58,7 @@
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | done | 2026-05-01T16:00:00Z | 2026-05-01T18:25:00Z | b3191ea | 集成测 `RUN_RENDER_PARTIAL_INTEGRATION=1` |
 | T6.4 | ffmpeg concat | done | 2026-05-01T20:15:00Z | 2026-05-01T20:50:00Z | ca08086 | `validatePartials` 含音轨布局；`partial` 须在 `output/` 下供 concat 列表 |
 | T6.5 | loudnorm two-pass | done | 2026-05-01T21:05:00Z | 2026-05-01T21:25:00Z | fac3410 | `twoPass:false` 为 copy；`inf` 测量显式报错 |
-| T6.6 | 质量校验 | pending | — | — | — | — |
+| T6.6 | 质量校验 | done | 2026-05-01T22:00:00Z | 2026-05-01T22:30:00Z | 779356a | `validateFinalNormalizedVideo`：Σ`timing.frames`/fps ±1 帧、5 段内等距抽样 |
 | T6.7 | render 命令组装 | pending | — | — | — | — |
 | T7.1 | Root.tsx 生成器（preview 模式） | pending | — | — | — | — |
 | T7.2 | preview 命令 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T6.6 — 质量校验 @ 779356a
+- acceptance: `final_normalized` 分辨率 / 时长 vs Σ partial（±1 帧）/ 黑帧 mp4 → QA 失败 → ✓；`npm run build` + `npm run test` → ✓
+- artifacts: `src/render/qa.ts` / `tests/qa.test.ts`
+- 备注：抽样时刻为 `actualDur * (i+0.5)/5`，避免贴 0/末尾的边沿帧；时长以 `ffprobe format=duration` 与 `Σ timing.frames / fps` 比对
 
 ### T6.5 — loudnorm two-pass @ fac3410
 - acceptance: 两遍 loudnorm + `final_normalized` 集成测 integrated loudness −16 ± 0.5 LUFS → ✓（`RUN_RENDER_PARTIAL_INTEGRATION=1`）；`npm run build` + `npm run test` → ✓
@@ -269,6 +274,12 @@
 - 选择方案：`parseLoudnormMeasureJson` 遇 `inf`（忽略大小写）即抛错；单测 concat 用 `aevalsrc` 立体声正弦替代 `anullsrc`；集成测在 build 目录写入 4s sine WAV 并刷新 `durationSec`/`lineTimings`。
 - 备选方案：loudnorm 失败时降级为 copy — 违背 PRD「错误显式」。
 - 影响范围：`tests/concat.test.ts`、`tests/render-blocks.integration.test.ts`。
+
+### 2026-05-01 22:32 | T6.6
+- 模糊点：TASKS 写「5 个等距抽样帧」未指定时间轴取点公式；若含 `t=0`/`t=end` 易抽到黑场或最后一帧重复。
+- 选择方案：在 `[0, duration]` 上用 `t_i = duration * (i + 0.5) / 5`（中心小区间），并用 `ffmpeg -ss` 在该时刻抽一帧 RGB24 判是否全 0。
+- 备选方案：固定 `i * duration / 4`（仅 5 点）— 边界敏感；逐像素「非黑」阈值 — TASKS 只要求「非纯黑」。
+- 影响范围：`src/render/qa.ts`、`tests/qa.test.ts`。
 
 ### 2026-05-01 20:48 | T6.4
 - 模糊点：TASKS 写「抽样」校验；ffprobe JSON 已覆盖首段流元数据，未逐帧扫 GOP。
