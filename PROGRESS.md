@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T6.6`
-- **last_updated**: `2026-05-01T21:25:00Z`
-- **next_action**: `开始 T6.6 — 质量校验`
+- **last_updated**: `2026-05-01T22:00:00Z`
+- **next_action**: `实现 src/render/qa.ts + 单测`
 - **completed**: `29 / 35`
 - **blockers**: `0`
 
@@ -58,7 +58,7 @@
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | done | 2026-05-01T16:00:00Z | 2026-05-01T18:25:00Z | b3191ea | 集成测 `RUN_RENDER_PARTIAL_INTEGRATION=1` |
 | T6.4 | ffmpeg concat | done | 2026-05-01T20:15:00Z | 2026-05-01T20:50:00Z | ca08086 | `validatePartials` 含音轨布局；`partial` 须在 `output/` 下供 concat 列表 |
 | T6.5 | loudnorm two-pass | done | 2026-05-01T21:05:00Z | 2026-05-01T21:25:00Z | fac3410 | `twoPass:false` 为 copy；`inf` 测量显式报错 |
-| T6.6 | 质量校验 | pending | — | — | — | — |
+| T6.6 | 质量校验 | in_progress | 2026-05-01T22:00:00Z | — | — | — |
 | T6.7 | render 命令组装 | pending | — | — | — | — |
 | T7.1 | Root.tsx 生成器（preview 模式） | pending | — | — | — | — |
 | T7.2 | preview 命令 | pending | — | — | — | — |
