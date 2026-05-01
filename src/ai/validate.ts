@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { PNG } from "pngjs";
 import { bundle } from "@remotion/bundler";
 import { renderStill, selectComposition } from "@remotion/renderer";
-import type { Theme } from "../types/script.js";
+import { getTheme } from "../../remotion/engine/theme.js";
 import { runIsolated, type RunIsolatedOptions } from "./sandbox.js";
 
 const require = createRequire(import.meta.url);
@@ -334,33 +334,6 @@ export async function validateStatic(
   }
 }
 
-const defaultTheme = (): Theme => ({
-  name: "dark-code",
-  colors: {
-    bg: "#0d1117",
-    fg: "#e6edf3",
-    accent: "#58a6ff",
-    muted: "#8b949e",
-    code: {
-      bg: "#161b22",
-      fg: "#e6edf3",
-      keyword: "#ff7b72",
-      string: "#a5d6ff",
-      comment: "#8b949e",
-    },
-  },
-  fonts: { sans: "sans-serif", mono: "monospace" },
-  spacing: { unit: 8 },
-  subtitle: {
-    fontFamily: "sans-serif",
-    fontSizePct: 4.5,
-    lineHeight: 1.35,
-    maxWidthPct: 88,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    paddingPx: 12,
-  },
-});
-
 function isPureBlackOrWhite(r: number, g: number, b: number): boolean {
   return (
     (r === 0 && g === 0 && b === 0) || (r === 255 && g === 255 && b === 255)
@@ -456,7 +429,7 @@ const width = ${width};
 const height = ${height};
 const subtitleSafeBottom = ${subtitleSafeBottom};
 const fps = ${fps};
-const theme = ${JSON.stringify(defaultTheme())};
+const theme = ${JSON.stringify(getTheme("dark-code"))};
 
 export default function Generated() {
   const frame = useCurrentFrame();
