@@ -131,4 +131,8 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | §6.4 GOP / Remotion Config | setKeyframeInterval 不存在于 Remotion v4
+- PRD 原描述：`remotion.config.ts` 中 `Config.setKeyframeInterval(1)`
+- 实际实现：`Config.overrideFfmpegCommand` 为 libx264 stitcher 注入 `-g 1 -keyint_min 1 -sc_threshold 0`，并保留 `setVideoImageFormat('jpeg')`
+- 原因：Remotion 4.x `@remotion/cli/config` 类型与运行时均无 `setKeyframeInterval`
+- PRD 是否同步更新：是（见 §6.4「GOP 起点对齐 IDR」段落）
