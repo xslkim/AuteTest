@@ -1,5 +1,15 @@
 import { Config } from "@remotion/cli/config";
 
+/**
+ * autovideo `--cwd=<build>` Studio/render 入口：`AUTVIDEO_REMOTION_ENTRY`
+ *（preview：`remotion-root-preview.tsx`；render：`remotion-root.tsx`）。
+ * 不设时使用仓库默认路径探测。
+ */
+const remotionEntry = process.env.AUTVIDEO_REMOTION_ENTRY?.trim();
+if (remotionEntry && remotionEntry.length > 0) {
+  Config.setEntryPoint(remotionEntry);
+}
+
 Config.setVideoImageFormat("jpeg");
 /** NodeNext 源码用 `.js` 后缀导入 TS 模块；Webpack 需映射到 `.ts`/`.tsx` */
 Config.overrideWebpackConfig((c) => ({
