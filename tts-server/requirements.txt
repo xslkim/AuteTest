@@ -1,0 +1,7 @@
+# VoxCPM2 FastAPI server (PRD §13.2)
+voxcpm
+fastapi
+uvicorn[standard]
+soundfile
+numpy
+torch

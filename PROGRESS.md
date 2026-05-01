@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T2.2`
-- **last_updated**: `2026-05-02T10:25:00Z`
-- **next_action**: `开始 T3.1 — VoxCPM FastAPI wrapper`
-- **completed**: `10 / 35`
+- **active_task**: `T3.2`
+- **last_updated**: `2026-05-02T12:50:00Z`
+- **next_action**: `开始 T3.2 — voxcpm-client + autoStart`
+- **completed**: `11 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -39,7 +39,7 @@
 | T1.5 | compile 命令组装 | done | 2026-05-01T21:15:00Z | 2026-05-01T22:20:00Z | 7db4e67 | — |
 | T2.1 | 缓存 store | done | 2026-05-01T23:05:00Z | 2026-05-01T23:45:00Z | 3026706 | `evictIfOverLimit({ triggerStageStart })` 对接 §11.4 compile 不触发 |
 | T2.2 | cache CLI | done | 2026-05-02T00:15:00Z | 2026-05-02T10:25:00Z | 0aa039a | `clean --dry-run`；子命令 `allowUnknownOption` 以兼容 `--cache-dir` 位置 |
-| T3.1 | VoxCPM FastAPI wrapper | pending | — | — | — | — |
+| T3.1 | VoxCPM FastAPI wrapper | done | 2026-05-02T12:00:00Z | 2026-05-02T12:50:00Z | 769b75b | — |
 | T3.2 | voxcpm-client + autoStart | pending | — | — | — | — |
 | T3.3 | ffmpeg helpers | pending | — | — | — | — |
 | T3.4 | lineTimings 计算 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T3.1 — VoxCPM FastAPI wrapper @ 769b75b
+- acceptance: `uvicorn server:app` + `curl`：`GET /health` → ✓；`POST /v1/voices` → ✓；`python server.py`（短时启动）→ ✓；`POST /v1/speech` 返回 `audio/wav`（48kHz，取自 `model.tts_model.sample_rate`）→ 需在本地有效 `VOXCPM_MODEL_DIR` 权重与参考音频下验收（本 CI 环境未加载完整权重时 `/v1/speech` 返回 503，路径已接通）
+- artifacts: `tts-server/server.py` / `tts-server/requirements.txt` / `.gitignore`（忽略 `tts-server/.venv/`）
+- 备注：`load_denoiser=True` 以支持 `denoise`；可选 `VOXCPM_DEVICE`、`VOXCPM_OPTIMIZE`
 
 ### T2.2 — cache CLI @ 0aa039a
 - acceptance: `stats | clean` 符合 §11.5；`stats` JSON + 默认表格双输出 → ✓；空目录 0 条目、put 后计数正确（`--cache-dir`）→ ✓；`npm run test` + `npm run build` → ✓
@@ -186,6 +191,12 @@
 - 选择方案：逐字符扫描——`\` 后紧跟 `*` 则吞掉反斜杠并输出一个字面 `*`；其余 `\` 保留为字面字符。
 - 备选方案：仅替换字面子串 `\*\*` — TypeScript/正则单次替换无法表达「两个连续转义星号」，且无法一致处理文档中 `\foo` 等边角输入。
 - 影响范围：仅 `parseNarrationLine`；与 Markdown 常见「星号转义」心智一致。
+
+### 2026-05-02 12:48 | T3.1
+- 模糊点：PRD §6.2.1 写「lazy load」但未写是否预装 ZipEnhancer denoiser；`VoxCPM.generate(denoise=True)` 需 denoiser 已加载。
+- 选择方案：`from_pretrained(..., load_denoiser=True)`，首次 `/v1/speech` 加载模型时一并初始化 denoiser；`denoise=false` 时不调用降噪，仅增加初始化成本与显存。
+- 备选方案：`load_denoiser=False` 且 `denoise` 请求时 400 — 与配置默认 `denoise: false` 不符，用户开 denoise 会踩坑。
+- 影响范围：仅 `tts-server/server.py`；无权重环境首次加载可能较慢或失败（与真实部署一致）。
 
 ### 2026-05-02 10:24 | T2.2
 - 模糊点：PRD §11.5 `--stale` 依赖 prompt 文件哈希；仓库尚无 `src/ai/prompts/component.md`（T4.1）时无法比对。

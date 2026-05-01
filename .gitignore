@@ -12,3 +12,6 @@ build/
 .cw/
 wav-*/
 *.log
+
+# Python TTS service local venv
+tts-server/.venv/
