@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T9.2`
-- **last_updated**: `2026-05-03T13:25:00Z`
-- **next_action**: `开始 T9.2 — E2E 测试`
+- **last_updated**: `2026-05-03T14:00:00Z`
+- **next_action**: `实现 tests/e2e.test.ts + npm run test:e2e；验收全绿后标记 done`
 - **completed**: `37 / 40`
 - **blockers**: `0`
 
@@ -66,7 +66,7 @@
 | T8.2 | doctor | done | 2026-05-02T15:00:00Z | 2026-05-02T15:35:00Z | 0ee7d50 | 退出码 0/1/2；`doctor` 允许 `--config`/`--cache-dir` |
 | T8.3 | init + templates | done | 2026-05-02T18:00:00Z | 2026-05-02T18:22:00Z | 3a29403 | `init <dir> [--force]`；目标不存在时创建父目录 |
 | T9.1 | 单测补全 | done | 2026-05-03T12:00:00Z | 2026-05-03T13:25:00Z | e0e3b70 | 合并为 `parser.test.ts` / `cache.test.ts` / `tts-timings.test.ts`；`cache` CLI 单测 |
-| T9.2 | E2E 测试 | pending | — | — | — | — |
+| T9.2 | E2E 测试 | in_progress | 2026-05-03T14:00:00Z | — | — | `tests/e2e.test.ts`，真 Remotion + mock HTTP |
 | T9.3 | install.sh | pending | — | — | — | — |
 | T9.4 | 文档 | pending | — | — | — | — |
 
