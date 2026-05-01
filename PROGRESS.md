@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T4.1`
-- **last_updated**: `2026-05-01T16:05:00Z`
-- **next_action**: `开始 T4.1 — prompt + 组件骨架`
+- **last_updated**: `2026-05-01T17:30:00Z`
+- **next_action**: `实现 src/ai/prompts/component.md 与 docs/ARCHITECTURE.md「Visuals prompt」节`
 - **completed**: `15 / 35`
 - **blockers**: `0`
 
@@ -44,7 +44,7 @@
 | T3.3 | ffmpeg helpers | done | 2026-05-01T10:35:00Z | 2026-05-01T10:37:00Z | 0fcbb40 | `anullsrc` fixture；concat 用临时 concat demuxer |
 | T3.4 | lineTimings 计算 | done | 2026-05-01T14:05:00Z | 2026-05-01T14:12:00Z | cad58d4 | 第 1 行 `startMs=0`，与 §6.2.3 公式一致 |
 | T3.5 | tts 命令组装 | done | 2026-05-01T15:30:00Z | 2026-05-01T16:05:00Z | f05ac08 | 入口用宽松 schema + `voiceRef` 存在性 |
-| T4.1 | prompt + 组件骨架 | pending | — | — | — | — |
+| T4.1 | prompt + 组件骨架 | in_progress | 2026-05-01T17:30:00Z | — | — | — |
 | T4.2 | Claude SDK 调用 + prompt cache | pending | — | — | — | — |
 | T4.3 | 子进程隔离工具 | pending | — | — | — | — |
 | T4.4 | 验证（tsc + render smoke） | pending | — | — | — | — |
