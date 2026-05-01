@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T4.4`
-- **last_updated**: `2026-05-01T21:05:00Z`
-- **next_action**: `开始 T4.4 — 验证（tsc + render smoke）`
-- **completed**: `18 / 35`
+- **active_task**: `T4.5`
+- **last_updated**: `2026-05-01T23:15:00Z`
+- **next_action**: `开始 T4.5 — visuals 命令组装`
+- **completed**: `19 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -47,7 +47,7 @@
 | T4.1 | prompt + 组件骨架 | done | 2026-05-01T17:30:00Z | 2026-05-01T17:55:00Z | 59bb212 | `prompt-version.ts` 与 cache CLI 共用 MD5 前缀 |
 | T4.2 | Claude SDK 调用 + prompt cache | done | 2026-05-01T18:15:00Z | 2026-05-01T19:05:00Z | 2d258b0 | `beta.messages` + `prompt-caching-2024-07-31`；集成测需 `ANTHROPIC_API_KEY` |
 | T4.3 | 子进程隔离工具 | done | 2026-05-01T20:20:00Z | 2026-05-01T21:05:00Z | c1c87ef | `memLimitBytes`/`cpuLimitSec` 可覆盖；默认 8GiB / 600s |
-| T4.4 | 验证（tsc + render smoke） | pending | — | — | — | — |
+| T4.4 | 验证（tsc + render smoke） | done | 2026-05-01T22:30:00Z | 2026-05-01T23:14:00Z | f0e887b | `RUN_VISUAL_VALIDATE=0` 跳过 render 集成 |
 | T4.5 | visuals 命令组装 | pending | — | — | — | — |
 | T5.1 | theme + 字体加载 | pending | — | — | — | — |
 | T5.2 | SubtitleOverlay | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T4.4 — 验证（tsc + render smoke） @ f0e887b
+- acceptance: 禁止 import → 静态扫描拦截 → ✓；类型错误 tsx → `runIsolated` tsc 失败 + stderr 前 50 行 → ✓；合法 tsx + `renderStill` → 非纯色 PNG → ✓（默认跑集成；`RUN_VISUAL_VALIDATE=0` 跳过）；`npm run test` + `npm run build` → ✓
+- artifacts: `src/ai/validate.ts` / `src/ai/visuals-shim.d.ts` / `templates/tsconfig.visuals.json` / `tests/validate.test.ts`
+- 备注：`tsconfig.visuals.json` 注入 `baseUrl`+`typeRoots` 指向仓库 `node_modules`，临时目录校验 tsc 仍可解析 `react`/`remotion`；shim 固定 `src/ai/visuals-shim.d.ts`（不随 dist）
 
 ### T4.3 — 子进程隔离工具 @ c1c87ef
 - acceptance: 父进程设 `ANTHROPIC_API_KEY` 时子进程 `printenv` 为空 → ✓；`sleep 60` + 短 `timeoutMs` 非零退出 → ✓；`isolateNetwork` + `curl example.com` 失败 → ✓（无 `curl` 时 vitest skip）；`npm run test` + `npm run build` → ✓
@@ -250,6 +255,12 @@
 - 选择方案：`CleanCacheOptions` 中各条件按 AND 收敛；仅当 `type`/`olderThanMs`/`stale` 全部满足（已指定的项）时删除。
 - 备选方案：OR — 易删掉仍应保留的条目。
 - 影响范围：`CacheStore.clean`；T2.2 CLI 应保持一致。
+
+### 2026-05-01 23:10 | T4.4
+- 模糊点：TASKS 要求 tsc 在 build out 写 `tsconfig.visuals.json`，但未说明在**临时目录**跑 `tsc` 时如何解析 `compilerOptions.types: ["react","remotion"]`。
+- 选择方案：模板增加 `baseUrl` + `typeRoots`（绝对路径替换为仓库根），向上查找 `templates/tsconfig.visuals.json` 定位 repo root；默认 shim 用仓库 `src/ai/visuals-shim.d.ts`（tsc 不 emit .d.ts）。
+- 备选方案：把 `node_modules` 链到临时目录 — 维护成本高。
+- 影响范围：仅 visuals 校验 tsconfig 生成；与 `dist/` 编译产物路径无关。
 
 ### 2026-05-01 21:00 | T4.3
 - 模糊点：TASKS T4.3 写 `prlimit --as=<mem> --cpu=<sec>` 未给出默认数值。

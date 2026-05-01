@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "baseUrl": "REPLACE_REPO_ROOT",
+    "typeRoots": [
+      "REPLACE_REPO_ROOT/node_modules/@types",
+      "REPLACE_REPO_ROOT/node_modules"
+    ],
+    "types": ["react", "remotion"],
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "allowJs": false,
+    "skipLibCheck": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "esModuleInterop": true
+  },
+  "include": ["REPLACE_COMPONENT_GLOB", "REPLACE_SHIM_PATH"]
+}
