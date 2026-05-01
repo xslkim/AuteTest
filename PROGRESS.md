@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T3.5`
-- **last_updated**: `2026-05-01T15:30:00Z`
-- **next_action**: `实现 src/cli/tts.ts 与 E2E mock 验收`
-- **completed**: `14 / 35`
+- **active_task**: `T4.1`
+- **last_updated**: `2026-05-01T16:05:00Z`
+- **next_action**: `开始 T4.1 — prompt + 组件骨架`
+- **completed**: `15 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -43,7 +43,7 @@
 | T3.2 | voxcpm-client + autoStart | done | 2026-05-01T10:30:43Z | 2026-05-01T10:32:48Z | 3ac0baa | 集成测 `RUN_VOXCPM_INTEGRATION=1` |
 | T3.3 | ffmpeg helpers | done | 2026-05-01T10:35:00Z | 2026-05-01T10:37:00Z | 0fcbb40 | `anullsrc` fixture；concat 用临时 concat demuxer |
 | T3.4 | lineTimings 计算 | done | 2026-05-01T14:05:00Z | 2026-05-01T14:12:00Z | cad58d4 | 第 1 行 `startMs=0`，与 §6.2.3 公式一致 |
-| T3.5 | tts 命令组装 | in_progress | 2026-05-01T15:30:00Z | — | — | — |
+| T3.5 | tts 命令组装 | done | 2026-05-01T15:30:00Z | 2026-05-01T16:05:00Z | f05ac08 | 入口用宽松 schema + `voiceRef` 存在性 |
 | T4.1 | prompt + 组件骨架 | pending | — | — | — | — |
 | T4.2 | Claude SDK 调用 + prompt cache | pending | — | — | — | — |
 | T4.3 | 子进程隔离工具 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T3.5 — tts 命令组装 @ f05ac08
+- acceptance: mock `POST /v1/speech`：2 块 5 行跑完、`audio` / `public/audio/B01.wav` → ✓；同脚本跑第二次 `/v1/speech` 次数仍为 5（cache 命中、0 新增 API）→ ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/cli/tts.ts` / `src/tts/cache-key.ts` / `src/tts/voxcpm-client.ts`（`speak` 支持 `AbortSignal`）/ `bin/autovideo.ts` / `tests/tts-cli.test.ts` / `tests/tts-cache-key.test.ts`
+- 备注：`--force` 且无 `--block` 时整块行级 miss；失败 `abort` 后打印 `resume` 提示；决策见决策日志 T3.5
 
 ### T3.4 — lineTimings 计算 @ cad58d4
 - acceptance: `computeLineTimings([1,0.5,2])` → `[{0,1000},{1200,1700},{1900,3900}]`（§6.2.3 + 行间 200 ms）→ ✓；`npm run test` + `npm run build` → ✓
