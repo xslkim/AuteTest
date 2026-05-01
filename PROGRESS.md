@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T5.2`
-- **last_updated**: `2026-05-01T11:22:09Z`
-- **next_action**: `开始 T5.2 — SubtitleOverlay`
+- **last_updated**: `2026-05-01T12:00:00Z`
+- **next_action**: `实现 SubtitleOverlay + Studio 测试 Composition`
 - **completed**: `21 / 35`
 - **blockers**: `0`
 
@@ -50,7 +50,7 @@
 | T4.4 | 验证（tsc + render smoke） | done | 2026-05-01T22:30:00Z | 2026-05-01T23:14:00Z | f0e887b | `RUN_VISUAL_VALIDATE=0` 跳过 render 集成 |
 | T4.5 | visuals 命令组装 | done | 2026-05-02T12:00:00Z | 2026-05-02T12:45:00Z | 7eb5c3f | `CompiledBlock` 允许可选 `audio` + `visual.componentPath`；生成顺序执行以满足「失败不启下一块」验收 |
 | T5.1 | theme + 字体加载 | done | 2026-05-01T11:19:15Z | 2026-05-01T11:22:09Z | 84723da | `getTheme`；Noto Sans SC + Noto Color Emoji + JetBrains Mono |
-| T5.2 | SubtitleOverlay | pending | — | — | — | — |
+| T5.2 | SubtitleOverlay | in_progress | 2026-05-01T12:00:00Z | — | — | SubtitleOverlay.tsx + studio-subtitle-overlay |
 | T5.3 | BlockFrame + animations | pending | — | — | — | — |
 | T5.4 | BlockComposition（render 用） | pending | — | — | — | — |
 | T6.1 | Root.tsx 生成器（render 模式） | pending | — | — | — | — |
