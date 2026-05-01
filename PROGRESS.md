@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T9.1`
-- **last_updated**: `2026-05-02T18:22:00Z`
-- **next_action**: `开始 T9.1 — 单测补全`
-- **completed**: `36 / 40`
+- **active_task**: `T9.2`
+- **last_updated**: `2026-05-03T13:25:00Z`
+- **next_action**: `开始 T9.2 — E2E 测试`
+- **completed**: `37 / 40`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -65,7 +65,7 @@
 | T8.1 | build orchestrator | done | 2026-05-02T13:02:00Z | 2026-05-02T13:11:00Z | 8a2ce5d | 子 stage 用 `cwd=build-out`、`script.json` 相对路径；不经 `process.chdir`（Vitest worker 限制） |
 | T8.2 | doctor | done | 2026-05-02T15:00:00Z | 2026-05-02T15:35:00Z | 0ee7d50 | 退出码 0/1/2；`doctor` 允许 `--config`/`--cache-dir` |
 | T8.3 | init + templates | done | 2026-05-02T18:00:00Z | 2026-05-02T18:22:00Z | 3a29403 | `init <dir> [--force]`；目标不存在时创建父目录 |
-| T9.1 | 单测补全 | pending | — | — | — | — |
+| T9.1 | 单测补全 | done | 2026-05-03T12:00:00Z | 2026-05-03T13:25:00Z | e0e3b70 | 合并为 `parser.test.ts` / `cache.test.ts` / `tts-timings.test.ts`；`cache` CLI 单测 |
 | T9.2 | E2E 测试 | pending | — | — | — | — |
 | T9.3 | install.sh | pending | — | — | — | — |
 | T9.4 | 文档 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T9.1 — 单测补全 @ e0e3b70
+- acceptance：`tests/parser.test.ts`（原 blocks-directives + project-meta）、`narration.test.ts`、`cache.test.ts`（store + `runCacheCommand` stats/clean dry-run/非法 type）、`tts-timings.test.ts`；`npm test` 全绿 → ✓
+- artifacts: `tests/parser.test.ts` / `tests/cache.test.ts` / `tests/tts-timings.test.ts` / `remotion/studio-subtitle-overlay.tsx`（注释路径）
+- 备注：`npm run build` + `npm test` 已跑通
 
 ### T8.3 — init + templates @ 3a29403
 - acceptance：`autovideo init demo` → 目录结构齐全（含 `hero.png`）→ ✓；模板 README 含 B00.wav / ANTHROPIC_API_KEY / doctor / build → ✓；单测含 init + 放置 B00.wav 后 `compile` → ✓；手动 `npx tsx bin/autovideo.ts init …` 目录列表齐全 → ✓（完整 `build` 需本机 VoxCPM / Claude，与 TASKS 手写验收一致）；`npm run build` + `npm run test` → ✓
@@ -274,6 +279,12 @@
 > - 选择方案：<采纳的实现>
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
+
+### 2026-05-03 13:20 | T9.1
+- 模糊点：TASKS 列出 `parser.test.ts` 等文件名，仓库已有拆分文件（`blocks-directives`、`project-meta` 等）。
+- 选择方案：按 TASKS 文件名合并用例（parser + cache + tts-timings），避免重复跑同一 describe。
+- 备选方案：仅新增薄壳 re-export 再 `import` 旧文件 — 易与 vitest 收集行为纠缠、可读性差。
+- 影响范围：仅 `tests/` 与一处 Studio 注释。
 
 ### 2026-05-02 18:05 | T8.3
 - 模糊点：TASKS 未写 `init` 在目标不存在时是否创建父目录。

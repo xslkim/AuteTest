@@ -2,13 +2,16 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   CacheStore,
   parseOlderThanMs,
   type ComponentManifestKeyFields,
 } from "../src/cache/store.js";
+import { runCacheCommand } from "../src/cli/cache.js";
+import { DEFAULT_AUTOVIDEO_CONFIG } from "../src/config/defaults.js";
+import { mergeAutovideoConfig } from "../src/config/load.js";
 
 async function rimraf(p: string): Promise<void> {
   await fs.rm(p, { recursive: true, force: true });
@@ -361,5 +364,128 @@ describe("CacheStore", () => {
     expect(n).toBe(1);
     expect(await store.get("audio", "dryk")).not.toBeNull();
     await expect(fs.access(path.join(root, "audio", "dryk.wav"))).resolves.toBeUndefined();
+  });
+});
+
+describe("runCacheCommand (CLI)", () => {
+  let cacheDir: string;
+  let cwd: string;
+
+  beforeEach(async () => {
+    cwd = path.join(import.meta.dirname, "..", `.cache-cli-test-${Date.now()}`);
+    cacheDir = path.join(cwd, "cache-work");
+    await fs.mkdir(cacheDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    await rimraf(cwd);
+  });
+
+  it("stats includes JSON payload with type breakdown", async () => {
+    const cfg = mergeAutovideoConfig(DEFAULT_AUTOVIDEO_CONFIG, {
+      cache: { dir: cacheDir, maxSizeGB: 20 },
+    });
+    const cfgPath = path.join(cwd, "autovideo.config.json");
+    await fs.writeFile(cfgPath, JSON.stringify(cfg), "utf8");
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await runCacheCommand({
+      cwd,
+      argv: [
+        "node",
+        "autovideo",
+        `--config`,
+        cfgPath,
+        "cache",
+        "stats",
+        "--json",
+      ],
+    });
+
+    expect(logSpy).toHaveBeenCalled();
+    const first = String(logSpy.mock.calls[0]![0]);
+    const payload = JSON.parse(first) as {
+      totalEntries: number;
+      byType: Record<string, { entries: number }>;
+    };
+    expect(payload.totalEntries).toBe(0);
+    expect(payload.byType.audio.entries).toBe(0);
+    expect(payload.byType.component.entries).toBe(0);
+    expect(payload.byType.partial.entries).toBe(0);
+  });
+
+  it("clean dry-run reports count without deleting", async () => {
+    const cfg = mergeAutovideoConfig(DEFAULT_AUTOVIDEO_CONFIG, {
+      cache: { dir: cacheDir, maxSizeGB: 20 },
+    });
+    const cfgPath = path.join(cwd, "autovideo.config.json");
+    await fs.writeFile(cfgPath, JSON.stringify(cfg), "utf8");
+
+    const store = new CacheStore({ cacheDir, maxSizeGB: 20 });
+    await store.ensureLayout();
+    const src = path.join(cwd, "blob.wav");
+    await fs.writeFile(src, "wav");
+    await store.put("audio", "kcli", src, {
+      ttsText: "hi",
+      voiceRefHash: "h",
+      cfgValue: 1,
+      inferenceTimesteps: 1,
+      denoise: false,
+      voxcpmModelVersion: "mv",
+    });
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await runCacheCommand({
+      cwd,
+      argv: [
+        "node",
+        "autovideo",
+        `--config`,
+        cfgPath,
+        "cache",
+        "clean",
+        "--type",
+        "audio",
+        "--dry-run",
+      ],
+    });
+
+    const jsonLine = String(
+      logSpy.mock.calls.find((c) => {
+        const s = String(c[0]);
+        return s.includes('"removed"') && s.includes('"dryRun"');
+      })?.[0],
+    );
+    const out = JSON.parse(jsonLine) as { removed: number; dryRun: boolean };
+    expect(out.dryRun).toBe(true);
+    expect(out.removed).toBe(1);
+    expect(await store.get("audio", "kcli")).not.toBeNull();
+  });
+
+  it("rejects invalid --type", async () => {
+    const cfg = mergeAutovideoConfig(DEFAULT_AUTOVIDEO_CONFIG, {
+      cache: { dir: cacheDir, maxSizeGB: 20 },
+    });
+    const cfgPath = path.join(cwd, "autovideo.config.json");
+    await fs.writeFile(cfgPath, JSON.stringify(cfg), "utf8");
+
+    await expect(
+      runCacheCommand({
+        cwd,
+        argv: [
+          "node",
+          "autovideo",
+          `--config`,
+          cfgPath,
+          "cache",
+          "clean",
+          "--type",
+          "nope",
+        ],
+      }),
+    ).rejects.toThrow(/audio \| component \| partial/);
   });
 });

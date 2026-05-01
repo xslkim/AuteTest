@@ -31,7 +31,7 @@ const DEMO_LINES: NarrationLine[] = [
   },
 ];
 
-/** 与 tests/timings.test.ts 一致：行 0 至 1000ms，200ms 间隙，行 1 自 1200ms，行 2 自 1900ms（示例 endMs 取整段末）。 */
+/** 与 tests/tts-timings.test.ts 一致：行 0 至 1000ms，200ms 间隙，行 1 自 1200ms，行 2 自 1900ms（示例 endMs 取整段末）。 */
 const DEMO_LINE_TIMINGS = [
   { lineIndex: 0, startMs: 0, endMs: 1000 },
   { lineIndex: 1, startMs: 1200, endMs: 1700 },
