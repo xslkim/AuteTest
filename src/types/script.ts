@@ -51,6 +51,8 @@ export interface SubtitleOverlayProps {
   audioStartFrame: number;
   frame: number;
   fps: number;
+  width: number;
+  height: number;
   theme: Theme;
 }
 

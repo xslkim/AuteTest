@@ -290,6 +290,12 @@
 - 备选方案：`fonts.mono` 仍用 `monospace` 通用族 — 与 CJK 混排时跨机 fallback 不一致。
 - 影响范围：仅 `remotion/engine/theme.ts`；后续主题可另定 mono。
 
+### 2026-05-01 12:05 | T5.2
+- 模糊点：T5.1 在 `NotoSansSC` / `NotoColorEmoji` 上传的 `subsets` 名（`chinese-simplified`、`emoji`）与 `@remotion/google-fonts` 4.x 元数据中实际键（`[4]`… 分片）不一致，Webpack 评测期 `loadFont` 抛错。
+- 选择方案：三处 google-fonts 调用仅指定 `weights` + `ignoreTooManyRequestsWarning`，由包内默认加载该字重下全部子集键。
+- 备选方案：穷举 `[0]`…`[119]` — Fragile，包升级必碎。
+- 影响范围：`remotion/engine/theme.ts`；首轮请求偏多但 Studio/render 可跑通。
+
 ### 2026-05-01 19:10 | T4.2
 - 模糊点：TASKS 固定「system prompt 标 ephemeral」；PRD §9 另有 `anthropic.promptCaching` 开关。
 - 选择方案：默认 `promptCaching: true` 时走 `anthropic.beta.messages.create`，`betas: ["prompt-caching-2024-07-31"]`，并对 system 文本块与 `render_component` 工具附加 `cache_control: {type:"ephemeral"}`；`false` 时同一调用路径但省略 betas 与 `cache_control`，仍强制 `tool_choice: render_component`。
