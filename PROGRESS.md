@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T09:30:20Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin/autovideo / .gitignore 并验收`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T09:32:14Z`
+- **next_action**: `开始 T0.2：类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T09:30:20Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T09:30:20Z | 2026-05-01T09:32:14Z | `a5eacbc` | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,11 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ a5eacbc
+
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且含 “not implemented” → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`（追加项）
+- 备注：环境无 Node 时已用 NodeSource apt 安装 Node 20 以跑验收（未写入仓库）。
 
 ---
 
@@ -98,6 +102,13 @@
 > - 影响范围：<是否影响其他任务>
 
 （开发中由 agent 追加）
+
+### 2026-05-01 09:32 | T0.1
+
+- 模糊点：PRD §13.1 / TASKS T0.1 仅列出 `tsconfig.json` 必填项，未说明 `skipLibCheck`
+- 选择方案：`skipLibCheck: true`，避免 `@types/dom-webcodecs` 与 `lib.dom` 重复声明导致 `tsc` 失败
+- 备选方案：手工收窄 `types` 或 pin 冲突的类型包 —易与 `@remotion/*` 等传递依赖不同步，维护成本高
+- 影响范围：仅跳过对 `.d.ts` 的类型一致性严查，不改变对项目 TS 源码的 strict 校验
 
 ---
 
