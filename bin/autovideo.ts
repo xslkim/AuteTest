@@ -8,6 +8,7 @@ import { runVisualsCommand } from "../src/cli/visuals.js";
 import { runRenderCommand } from "../src/cli/render.js";
 import { runPreviewCommand } from "../src/cli/preview.js";
 import { runBuildCommand } from "../src/cli/build.js";
+import { runDoctorCommand } from "../src/cli/doctor.js";
 
 const notImplemented = (): never => {
   console.error("not implemented");
@@ -127,9 +128,21 @@ async function main(): Promise<void> {
       }
     });
 
-  program.command("doctor").description("Check local environment").action(() => {
-    notImplemented();
-  });
+  program
+    .command("doctor")
+    .description("Check local environment")
+    .allowUnknownOption(true)
+    .allowExcessArguments(true)
+    .action(async () => {
+      try {
+        const code = await runDoctorCommand({ argv: process.argv, cwd: process.cwd() });
+        process.exit(code);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error(msg);
+        process.exit(1);
+      }
+    });
 
   program.command("init <dir>").description("Scaffold a starter project").action(() => {
     notImplemented();
