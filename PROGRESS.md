@@ -6,19 +6,19 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T05:09:41Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin CLI stub`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T05:14:17Z`
+- **next_action**: `开始 T0.2 类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
 
-1. [x] 已读 `PRD.md` 全文
-2. [x] 已读 `TASKS.md` 全文
-3. [x] 已读本文件，确认 `active_task` 与 `next_action`
-4. [x] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（尚无 done 任务）
+1. [ ] 已读 `PRD.md` 全文
+2. [ ] 已读 `TASKS.md` 全文
+3. [ ] 已读本文件，确认 `active_task` 与 `next_action`
+4. [ ] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
+5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 `chore(...): done` commit 一致
 
 ---
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T05:09:41Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T05:09:41Z | 2026-05-01T05:14:17Z | 4630a14 | Remotion 4：`overrideFfmpegCommand` 替代已移除的 `setKeyframeInterval` |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ 4630a14
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且 stderr 含 `not implemented` → ✓
+- artifacts: `package.json` / `package-lock.json` / `tsconfig.json` / `remotion.config.ts` / `.gitignore` / `bin/autovideo.ts`
+- 备注：`@remotion/cli` 作为 devDependency；`remotion.config.ts` 用 `overrideFfmpegCommand` 注入 x264 `-g 1`，见 `docs(T0.1): align PRD…`（1f73035）。
 
 ---
 
@@ -97,7 +100,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 05:20 | T0.1
+- 模糊点：`TASKS.md` T0.1 要求 `remotion.config.ts` 使用 `Config.setKeyframeInterval` / `setVideoImageFormat`；`PRD.md` §13.1 的 `package.json` 示例未列出 `@remotion/cli`；当前 `@remotion/cli` 4.0 已移除 `setKeyframeInterval`。
+- 选择方案：将 `@remotion/cli` 与现有 Remotion 包对齐为 `^4.0.0`，从 `@remotion/cli/config` 导入 `Config`；`setVideoImageFormat('jpeg')` 保留；GOP/IDR 用 `Config.overrideFfmpegCommand` 在 stitcher 阶段于 `libx264` 后插入 `-g 1 -keyint_min 1`；同步修订 `PRD.md` §6.4 描述。
+- 备选方案：保留 TASKS 字面 `setKeyframeInterval` — 在当前 Remotion 版本下无法通过 `tsc` 与类型定义。
+- 影响范围：依赖与 Remotion 配置；与 PRD §6.4 文档表述一致。
 
 ---
 
@@ -131,4 +138,8 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | §6.4 step 6 GOP/IDR | `setKeyframeInterval` → `overrideFfmpegCommand` + x264 `-g 1`
+- PRD 原描述：`remotion.config.ts` 使用 `Config.setKeyframeInterval(1)`。
+- 实际实现：`Config.overrideFfmpegCommand` 在 `libx264` 后插入 `-g 1 -keyint_min 1`，并保留 `setVideoImageFormat('jpeg')`。
+- 原因：Remotion 4.0.455 的 `@remotion/cli/config` 类型与实现中已无 `setKeyframeInterval`；需用当前支持的 FFmpeg 覆盖能力达到同等「每帧关键帧」效果。
+- PRD 是否同步更新：是（1f73035）
