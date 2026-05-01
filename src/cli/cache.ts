@@ -1,11 +1,9 @@
 import { readFileSync } from "node:fs";
-import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 
+import { readComponentPromptMd5Prefix } from "../ai/prompt-version.js";
 import {
   CacheStore,
   parseOlderThanMs,
@@ -48,11 +46,8 @@ function currentRemotionVersion(): string | null {
 }
 
 async function readPromptVersionPrefix(): Promise<string | null> {
-  const here = dirname(fileURLToPath(import.meta.url));
-  const candidate = join(here, "..", "ai", "prompts", "component.md");
   try {
-    const buf = await readFile(candidate);
-    return createHash("md5").update(buf).digest("hex").slice(0, 8);
+    return await readComponentPromptMd5Prefix();
   } catch {
     return null;
   }
