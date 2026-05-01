@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T1.4`
-- **last_updated**: `2026-05-01T19:05:00Z`
-- **next_action**: `开始 T1.4 — 资产 hash 复制`
+- **last_updated**: `2026-05-01T20:00:00Z`
+- **next_action**: `实现 src/parser/assets.ts + 单测`
 - **completed**: `6 / 35`
 - **blockers**: `0`
 
@@ -35,7 +35,7 @@
 | T1.1 | 项目文件 + meta 解析 | done | 2026-05-01T16:00:00Z | 2026-05-01T17:50:00Z | e33ff88 | — |
 | T1.2 | 块解析 + directive | done | 2026-05-01T09:49:11Z | 2026-05-01T09:52:02Z | 820b0e9 | — |
 | T1.3 | 旁白预处理 | done | 2026-05-01T18:30:00Z | 2026-05-01T19:05:00Z | 991a46f | — |
-| T1.4 | 资产 hash 复制 | pending | — | — | — | — |
+| T1.4 | 资产 hash 复制 | in_progress | 2026-05-01T20:00:00Z | — | — | — |
 | T1.5 | compile 命令组装 | pending | — | — | — | — |
 | T2.1 | 缓存 store | pending | — | — | — | — |
 | T2.2 | cache CLI | pending | — | — | — | — |
