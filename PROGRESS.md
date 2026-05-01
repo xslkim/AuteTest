@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T5.4`
-- **last_updated**: `2026-05-01T14:45:00Z`
-- **next_action**: `开始 T5.4 — BlockComposition（render 用）`
+- **last_updated**: `2026-05-01T16:00:00Z`
+- **next_action**: `实现 T5.4：VideoComposition + Studio demo + fixture public/`
 - **completed**: `23 / 35`
 - **blockers**: `0`
 
@@ -52,7 +52,7 @@
 | T5.1 | theme + 字体加载 | done | 2026-05-01T11:19:15Z | 2026-05-01T11:22:09Z | 84723da | `getTheme`；Noto Sans SC + Noto Color Emoji + JetBrains Mono |
 | T5.2 | SubtitleOverlay | done | 2026-05-01T12:00:00Z | 2026-05-01T12:08:00Z | c3425f5 | `npx remotion studio remotion/studio-subtitle-overlay.tsx` Composition `SubtitleOverlayDemo` |
 | T5.3 | BlockFrame + animations | done | 2026-05-01T14:00:00Z | 2026-05-01T14:45:00Z | cd4dfd5 | Studio `BlockFrameFadeUpDemo` |
-| T5.4 | BlockComposition（render 用） | pending | — | — | — | — |
+| T5.4 | BlockComposition（render 用） | in_progress | 2026-05-01T16:00:00Z | — | — | — |
 | T6.1 | Root.tsx 生成器（render 模式） | pending | — | — | — | — |
 | T6.2 | timing 计算 | pending | — | — | — | — |
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | pending | — | — | — | — |
