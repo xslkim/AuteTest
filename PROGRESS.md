@@ -192,6 +192,12 @@
 - 备选方案：仅替换字面子串 `\*\*` — TypeScript/正则单次替换无法表达「两个连续转义星号」，且无法一致处理文档中 `\foo` 等边角输入。
 - 影响范围：仅 `parseNarrationLine`；与 Markdown 常见「星号转义」心智一致。
 
+### 2026-05-01 10:33 | T3.2
+- 模糊点：PRD §9 `endpoint` 示例含端口；若用户写成 `http://127.0.0.1` 未写端口，`URL` 解析会得到默认 80，与常见本地 8000 不一致。
+- 选择方案：`parseVoxcpmEndpoint` 对 **http** 且无端口时使用 **8000**；https 无端口仍用 443。
+- 备选方案：沿用浏览器默认 80 — autoStart 会把 uvicorn 绑到错误端口，health 永远失败。
+- 影响范围：仅 `ensureVoxcpmServer` 绑定端口；显式端口的 endpoint 不变。
+
 ### 2026-05-02 12:48 | T3.1
 - 模糊点：PRD §6.2.1 写「lazy load」但未写是否预装 ZipEnhancer denoiser；`VoxCPM.generate(denoise=True)` 需 denoiser 已加载。
 - 选择方案：`from_pretrained(..., load_denoiser=True)`，首次 `/v1/speech` 加载模型时一并初始化 denoiser；`denoise=false` 时不调用降噪，仅增加初始化成本与显存。
