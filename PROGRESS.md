@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T8.1`
-- **last_updated**: `2026-05-02T14:30:00Z`
-- **next_action**: `开始 T8.1 — build orchestrator`
+- **last_updated**: `2026-05-02T16:00:00Z`
+- **next_action**: `实现 src/cli/build.ts 并接好 bin`
 - **completed**: `33 / 35`
 - **blockers**: `0`
 
@@ -62,7 +62,7 @@
 | T6.7 | render 命令组装 | done | 2026-05-01T23:50:00Z | 2026-05-01T23:58:00Z | 7e33deb | `renderInputSchema` 允许块上可选 `timing`/`render` 以便已完成一轮的 script.json 再次 `render` |
 | T7.1 | Root.tsx 生成器（preview 模式） | done | 2026-05-02T12:10:00Z | 2026-05-02T12:42:00Z | 17353aa | per-block Composition；无有效 lineTimings 时均匀占位字幕 |
 | T7.2 | preview 命令 | done | 2026-05-02T14:00:00Z | 2026-05-02T14:30:00Z | f47458a | `remotion-root-preview.tsx`；`AUTVIDEO_REMOTION_ENTRY`；`--block` 默认 `--port=3333` + `xdg-open` |
-| T8.1 | build orchestrator | pending | — | — | — | — |
+| T8.1 | build orchestrator | in_progress | 2026-05-02T16:00:00Z | — | — | — |
 | T8.2 | doctor | pending | — | — | — | — |
 | T8.3 | init + templates | pending | — | — | — | — |
 | T9.1 | 单测补全 | pending | — | — | — | — |
