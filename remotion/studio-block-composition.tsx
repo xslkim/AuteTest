@@ -5,6 +5,7 @@
 import React from "react";
 import { Composition, registerRoot } from "remotion";
 import "./engine/theme.js";
+import { blockLoaders } from "./studio-block-imports.js";
 import { BlockComposition } from "./VideoComposition.js";
 
 const FPS = 30;
@@ -22,7 +23,9 @@ const HOLD_FRAMES = Math.max(
 const durationInFrames = ENTER_FRAMES + HOLD_FRAMES + EXIT_FRAMES;
 
 function BlockCompositionStudioDemo() {
-  return <BlockComposition blockId="B01" />;
+  return (
+    <BlockComposition blockId="B01" blockLoaders={blockLoaders} scriptPublicPath="script.json" />
+  );
 }
 
 export const StudioBlockCompositionRoot = () => (

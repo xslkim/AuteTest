@@ -4,6 +4,7 @@
  */
 
 import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import type { ComponentType } from "react";
 import {
   AbsoluteFill,
   Audio,
@@ -12,18 +13,22 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import type { Block, Script } from "../src/types/script.js";
+import type { AnimationProps, Block, Script } from "../src/types/script.js";
 import { SubtitleOverlay } from "./components/SubtitleOverlay.js";
 import { BlockFrame } from "./engine/block-frame.js";
 import { getTheme } from "./engine/theme.js";
 import { fetchScriptJson } from "./load-script-runtime.js";
 
+export type BlockComponentLoader = () => Promise<{
+  default: ComponentType<AnimationProps>;
+}>;
+
 const MIN_HOLD_SEC = 1.5;
 const DEFAULT_ENTER_SEC = 0.5;
 const DEFAULT_EXIT_SEC = 0.3;
 
-/** 渲染阶段由 render 写入 `public/script.json`；Studio 可将 fixture 放进 `public/`。 */
-export const DEFAULT_SCRIPT_PUBLIC_PATH = "script.json";
+/** 与 Remotion bundle 静态 URL 一致：`/public/script.json`（见 `load-script-runtime`）。 */
+export const DEFAULT_SCRIPT_PUBLIC_PATH = "public/script.json";
 
 function enterExitFrames(
   fps: number,
@@ -75,12 +80,14 @@ function computedTimingForBlock(
 
 export interface BlockCompositionProps {
   blockId: string;
+  blockLoaders: Record<string, BlockComponentLoader>;
   /** 相对 Remotion `public/` */
   scriptPublicPath?: string;
 }
 
 export const BlockComposition: React.FC<BlockCompositionProps> = ({
   blockId,
+  blockLoaders,
   scriptPublicPath = DEFAULT_SCRIPT_PUBLIC_PATH,
 }) => {
   const { fps, width, height } = useVideoConfig();
@@ -89,15 +96,29 @@ export const BlockComposition: React.FC<BlockCompositionProps> = ({
   const [script, setScript] = useState<Script | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
 
-  const DynamicComponent = useMemo(
-    () =>
-      lazy(() =>
-        import(
-          `../src/blocks/${blockId}/Component.js`
-        ),
-      ),
-    [blockId],
-  );
+  const DynamicComponent = useMemo(() => {
+    const loader = blockLoaders[blockId];
+    if (loader == null) {
+      return lazy(async () => ({
+        default: function MissingBlock() {
+          return (
+            <AbsoluteFill
+              style={{
+                backgroundColor: "#400",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "#fff",
+                padding: 24,
+              }}
+            >
+              {`No block loader for ${blockId}`}
+            </AbsoluteFill>
+          );
+        },
+      }));
+    }
+    return lazy(loader);
+  }, [blockId, blockLoaders]);
 
   useEffect(() => {
     let cancelled = false;
