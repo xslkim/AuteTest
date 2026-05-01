@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "schemaVersion": "1.0",
+    "title": "BlockComposition fixture",
+    "voiceRef": "/tmp/fixture.wav",
+    "aspect": "16:9",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "theme": "dark-code",
+    "subtitleSafeBottom": 162
+  },
+  "blocks": [
+    {
+      "id": "B01",
+      "title": "Demo block",
+      "enter": "fade-up",
+      "exit": "fade",
+      "visual": {
+        "description": "Studio fixture",
+        "componentPath": "src/blocks/B01/Component.tsx"
+      },
+      "narration": {
+        "lines": [
+          {
+            "text": "第一段 **高亮**",
+            "ttsText": "第一段 高亮",
+            "highlights": [{ "start": 4, "end": 6 }]
+          },
+          {
+            "text": "第二句旁白",
+            "ttsText": "第二句旁白",
+            "highlights": []
+          }
+        ]
+      },
+      "audio": {
+        "wavPath": "public/audio/B01.wav",
+        "durationSec": 8,
+        "lineTimings": [
+          { "lineIndex": 0, "startMs": 0, "endMs": 1000 },
+          { "lineIndex": 1, "startMs": 1200, "endMs": 3700 }
+        ]
+      }
+    }
+  ],
+  "artifacts": {},
+  "assets": {}
+}
