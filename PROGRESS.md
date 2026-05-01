@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T1.2`
-- **last_updated**: `2026-05-01T09:49:11Z`
-- **next_action**: `实现并验收 T1.2 — blocks.ts / directives.ts`
-- **completed**: `4 / 35`
+- **active_task**: `T1.3`
+- **last_updated**: `2026-05-01T09:52:02Z`
+- **next_action**: `开始 T1.3 — 旁白预处理`
+- **completed**: `5 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -33,7 +33,7 @@
 | T0.2 | 类型定义 + Schema | done | 2026-05-01T12:00:00Z | 2026-05-01T12:45:00Z | f6fc71d | — |
 | T0.3 | 配置 loader | done | 2026-05-01T14:10:00Z | 2026-05-01T14:43:30Z | f96724c | — |
 | T1.1 | 项目文件 + meta 解析 | done | 2026-05-01T16:00:00Z | 2026-05-01T17:50:00Z | e33ff88 | — |
-| T1.2 | 块解析 + directive | in_progress | 2026-05-01T09:49:11Z | — | — | — |
+| T1.2 | 块解析 + directive | done | 2026-05-01T09:49:11Z | 2026-05-01T09:52:02Z | 820b0e9 | — |
 | T1.3 | 旁白预处理 | pending | — | — | — | — |
 | T1.4 | 资产 hash 复制 | pending | — | — | — | — |
 | T1.5 | compile 命令组装 | pending | — | — | — | — |
@@ -91,6 +91,11 @@
 - artifacts: `src/parser/project.ts` / `src/parser/meta.ts` / `tests/project-meta.test.ts`
 - 备注：`project.json` 仅允许 `meta` / `blocks` 顶层键（与 PRD 示例一致）；`meta.md` 允许 `slug:`（§7），非 `--meta` 字段；未知 meta 键报错以满足 §3.4 校验
 
+### T1.2 — 块解析 + directive @ 820b0e9
+- acceptance: 单文件多块、多文件合并顺序、ID 冲突、ID 自动编号 → ✓；`@duration: 8`（缺 `s`）、`@duration: 1m20s` 报错 → ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/parser/blocks.ts` / `src/parser/directives.ts` / `tests/blocks-directives.test.ts`
+- 备注：`ParsedMarkdownBlock.narrationRaw` 供 T1.3；`#B1` 规范为 `B01`；首个 `>>>` 前非空行报错
+
 ### T0.3 — 配置 loader @ f96724c
 - acceptance: `--meta dotted.key` 报错 → ✓（单测）；`--meta title=foo` / `fps=30` 类型推断 → ✓；合并优先级（defaults < cwd `autovideo.config.json` < `--config`，且 `--cache-dir` 高于文件）→ ✓；`npm run test` + `tsc --noEmit` → ✓
 - artifacts: `src/config/types.ts` / `src/config/defaults.ts` / `src/config/load.ts` / `tests/config-loader.test.ts`
@@ -132,6 +137,12 @@
 - 选择方案：`import type { ReactNode, ReactElement } from "react"`，devDependency 增加 `@types/react`；`BlockVisualComponent` 返回 `ReactElement | null`。
 - 备选方案：用 `unknown` / 不写组件签名 — 会削弱 PRD 契约与后续 visuals 校验。
 - 影响范围：`package.json` devDeps；`src/types/script.ts`。
+
+### 2026-05-01 09:52 | T1.2
+- 模糊点：PRD §3.3 未写明内容文件在首个 `>>>` 之前是否允许前言或非空行。
+- 选择方案：首个 `>>>` 之前若有非空行则报错，确保内容文件「只含块」、避免静默吞掉错别字段落。
+- 备选方案：忽略前言 — 易掩盖用户把说明写在错误位置。
+- 影响范围：仅 `extractRegionsFromFile`。
 
 ---
 
