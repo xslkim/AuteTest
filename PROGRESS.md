@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin/cli / .gitignore`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:30:00Z`
+- **next_action**: `执行 T0.2：类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -18,7 +18,7 @@
 2. [x] 已读 `TASKS.md` 全文
 3. [x] 已读本文件，确认 `active_task` 与 `next_action`
 4. [x] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致
+5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致
 
 ---
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:00:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:00:00Z | 2026-05-01T12:30:00Z | b6d2190 | `@remotion/cli` 无 setKeyframeInterval，见已知差异 |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ `b6d2190`
+- acceptance: `npm install` → ✓；`npx tsx bin/autovideo.ts --help` 显示 9 子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 + stderr「not implemented」→ ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、合并后 `.gitignore`
+- 备注：Node 18 下 npm 有 `engines` 告警；推荐使用 Node ≥ 20
 
 ---
 
@@ -131,4 +134,8 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | PRD §6.4 / TASKS T0.1（remotion.config） | GOP 配置方式
+- PRD 原描述：`Config.setKeyframeInterval(1)`（TASKS：同名 API）
+- 实际实现：`Config.overrideFfmpegCommand` → libx264 路径插入 `-g 1 -keyint_min 1 -sc_threshold 0`；`Config.setVideoImageFormat('jpeg')`
+- 原因：`@remotion/cli` ^4 FlatConfig 无 `setKeyframeInterval`，`tsc` 报错
+- PRD 是否同步更新：是（commit `05b923e`）
