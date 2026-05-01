@@ -6,9 +6,9 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T2.2`
-- **last_updated**: `2026-05-02T10:25:00Z`
-- **next_action**: `开始 T3.1 — VoxCPM FastAPI wrapper`
+- **active_task**: `T3.1`
+- **last_updated**: `2026-05-02T12:00:00Z`
+- **next_action**: `实现 tts-server FastAPI 端点并验收`
 - **completed**: `10 / 35`
 - **blockers**: `0`
 
@@ -39,7 +39,7 @@
 | T1.5 | compile 命令组装 | done | 2026-05-01T21:15:00Z | 2026-05-01T22:20:00Z | 7db4e67 | — |
 | T2.1 | 缓存 store | done | 2026-05-01T23:05:00Z | 2026-05-01T23:45:00Z | 3026706 | `evictIfOverLimit({ triggerStageStart })` 对接 §11.4 compile 不触发 |
 | T2.2 | cache CLI | done | 2026-05-02T00:15:00Z | 2026-05-02T10:25:00Z | 0aa039a | `clean --dry-run`；子命令 `allowUnknownOption` 以兼容 `--cache-dir` 位置 |
-| T3.1 | VoxCPM FastAPI wrapper | pending | — | — | — | — |
+| T3.1 | VoxCPM FastAPI wrapper | in_progress | 2026-05-02T12:00:00Z | — | — | — |
 | T3.2 | voxcpm-client + autoStart | pending | — | — | — | — |
 | T3.3 | ffmpeg helpers | pending | — | — | — | — |
 | T3.4 | lineTimings 计算 | pending | — | — | — | — |
