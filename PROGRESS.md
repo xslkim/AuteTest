@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:05:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin stub / .gitignore；验收 npm install 与 CLI`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:15:00Z`
+- **next_action**: `开始 T0.2：类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:05:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T12:15:00Z | b043fb9 | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ b043fb9
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示所有子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 + `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`
+- 备注：`cache` 使用 `cache stats` / `cache clean` 子命令与 PRD §11.5 对齐；顶层 `--help` 列出全部命令名
 
 ---
 
@@ -97,7 +100,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 12:10 | T0.1
+- 模糊点：`TASKS.md` T0.1 写「注册 8 个子命令」但列举 `build` / `compile` / `tts` / `visuals` / `render` / `preview` / `cache` / `doctor` / `init` 共 9 项
+- 选择方案：实现全部 9 个顶层命令；`cache` 下注册 `stats` 与 `clean` 与 `@PRD.md` §11.5 一致
+- 备选方案：严格按字数删去某一命令 → 与 PRD CLI 不一致，未采纳
+- 影响范围：仅 CLI 骨架；后续 T2.2 实现 cache 时可沿用当前结构
 
 ---
 
