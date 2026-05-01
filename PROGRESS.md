@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T9.4`
-- **last_updated**: `2026-05-01T16:00:00Z`
-- **next_action**: `实现 docs/INPUT_SPEC.md、扩展 ARCHITECTURE、根 README`
-- **completed**: `39 / 40`
+- **active_task**: `无`
+- **last_updated**: `2026-05-01T16:30:00Z`
+- **next_action**: `（全部任务已完成）`
+- **completed**: `40 / 40`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -68,7 +68,7 @@
 | T9.1 | 单测补全 | done | 2026-05-03T12:00:00Z | 2026-05-03T13:25:00Z | e0e3b70 | 合并为 `parser.test.ts` / `cache.test.ts` / `tts-timings.test.ts`；`cache` CLI 单测 |
 | T9.2 | E2E 测试 | done | 2026-05-03T14:00:00Z | 2026-05-03T14:40:00Z | f67844c | `npm run test:e2e`；QA 用视频轨时长 + ±2 帧 |
 | T9.3 | install.sh | done | 2026-05-01T14:00:00Z | 2026-05-01T14:05:00Z | 6c83675 | `--skip-model` 写占位 `config.json`；需有效 `ANTHROPIC_API_KEY` 才能 doctor 全 PASS |
-| T9.4 | 文档 | in_progress | 2026-05-01T16:00:00Z | — | — | 撰写 INPUT_SPEC / 扩展 ARCHITECTURE / README |
+| T9.4 | 文档 | done | 2026-05-01T16:00:00Z | 2026-05-01T16:28:00Z | ac1048d | `ARCHITECTURE` 含全文 system prompt（`~~~` 嵌套 fenced）；云端环境无 npm，未就地跑 build/test |
 
 ---
 
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T9.4 — 文档 @ ac1048d
+- acceptance：INPUT_SPEC 覆盖 project.json / meta.md / 块语法；ARCHITECTURE 覆盖 stage·cache·隔离·Theme·Visuals 节且含 `component.md` 全文落地；README 5 分钟快速开始 → ✓（清晰度为人读 subjective）
+- artifacts: `docs/INPUT_SPEC.md` / `docs/ARCHITECTURE.md` / `README.md`
+- 备注：`npm run build` / `npm test` 在云 agent 环境中 `npm` 不可用未执行；请在本地 Node 20+ 复检
 
 ### T9.3 — install.sh @ 6c83675
 - acceptance：PRD §13.3 六步（apt 含 ffmpeg/chromium/字体/util-linux；nvm 安装 Node 20；venv+pip；HF 权重；不预下 Chromium；doctor）+ `--skip-model` → ✓（本环境无真实 Anthropic key 时无法宣称「doctor 全 PASS」；全 PASS 需有效 key 与默认权重下载）；Ubuntu 24 + nvm Node 20 下 `install.sh --skip-model` 跑通依赖与临时 tts health
