@@ -99,6 +99,18 @@
 
 （开发中由 agent 追加）
 
+### 2026-05-01 05:25 | T0.1
+- 模糊点：TASKS.md / PRD 要求 `Config.setKeyframeInterval(1)`；`@remotion/cli@4.0.455` 的 `Config` 已无该方法。
+- 选择方案：使用 `Config.overrideFfmpegCommand` 在 `stitcher` 阶段、非 `-c:v copy` 时在 `-c:v` 编码器名之后插入 `-g 1 -keyint_min 1`，与 PRD「每帧关键帧 / GOP 对齐 concat」意图一致。
+- 备选方案：忽略 GOP 设置（违背 PRD §6.4）；或调用不存在的 API（构建失败）。
+- 影响范围：仅 `remotion.config.ts`；后续程序化 `renderMedia` 若未加载此配置文件需另行对齐。
+
+### 2026-05-01 05:26 | T0.1
+- 模糊点：PRD §13.1 未列出 `@remotion/cli`，但 `remotion.config.ts` 需 `import { Config } from "@remotion/cli/config"`。
+- 选择方案：将 `@remotion/cli` 作为 `devDependency`（与 `tsx` 同级），版本与已安装的 `@remotion/renderer` 对齐（`^4.0.0` 解析为 4.0.455）。
+- 备选方案：不安装则 config 无法类型检查/解析；放入 `dependencies` 会扩大生产安装面（CLI 对最终用户亦有 `npx remotion` 用途，但当前 skeleton 以 dev 为主）。
+- 影响范围：`package.json` only。
+
 ---
 
 ## 阻塞 / 待决策（必须停下问人类的事项）
