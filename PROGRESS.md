@@ -231,6 +231,12 @@
 - 备选方案：OR — 易删掉仍应保留的条目。
 - 影响范围：`CacheStore.clean`；T2.2 CLI 应保持一致。
 
+### 2026-05-01 10:50 | T3.5
+- 模糊点：PRD §6.2 写 tts 入口为已 compile 的 `script.json`，而现有 `compiledScriptSchema` 为 `.strict()` 且禁止块上 `audio` 键，与「再次运行 tts」冲突。
+- 选择方案：`tts` 使用宽松 `scriptSchema.parse` + 最小前置校验（schemaVersion、非空旁白行、`voiceRef` 存在）；不写回时仍满足 compile 输出契约，写回后由全量 schema 校验磁盘 JSON。
+- 备选方案：为「compile 输出」与「tts 可重入」拆两套 Zod — 改动面大，留待后续类型整理。
+- 影响范围：仅 `src/cli/tts.ts` 入口校验。
+
 ---
 
 ## 阻塞 / 待决策（必须停下问人类的事项）
