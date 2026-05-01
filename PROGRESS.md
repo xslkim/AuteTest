@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:45:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin/autovideo.ts / .gitignore`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T13:05:00Z`
+- **next_action**: `开始 T0.2（类型定义 + Schema）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:45:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:45:00Z | 2026-05-01T13:05:00Z | 1e6cb1e | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ 1e6cb1e
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`（追加构建忽略项）
+- 备注：`devDependency` 增加 `@remotion/cli` 以便 `remotion.config.ts` 从 `@remotion/cli/config` 导入 `Config`（PRD §13.1 未单独列出，与 Remotion 配置惯例一致）
 
 ---
 
@@ -96,6 +99,12 @@
 > - 选择方案：<采纳的实现>
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
+
+### 2026-05-01 13:05 | T0.1
+- 模糊点：PRD §13.1 依赖列表未列出 `@remotion/cli`，但 TASKS 要求 `remotion.config.ts` 使用 `Config.setKeyframeInterval` / `Config.setVideoImageFormat`。
+- 选择方案：在 `devDependencies` 中加入 `@remotion/cli`（`^4.0.0`），与 `remotion` 主版本对齐。
+- 备选方案：不写配置文件或换导入路径——会破坏 TASK 要求的 Config API，或未解析的配置导入。
+- 影响范围：仅 `package.json` / lockfile；运行时使用 `@remotion/bundler`/`renderer` 不受影响。
 
 （开发中由 agent 追加）
 
