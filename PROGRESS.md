@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T4.5`
-- **last_updated**: `2026-05-01T23:15:00Z`
-- **next_action**: `开始 T4.5 — visuals 命令组装`
-- **completed**: `19 / 35`
+- **active_task**: `T5.1`
+- **last_updated**: `2026-05-02T12:45:00Z`
+- **next_action**: `开始 T5.1 — theme + 字体加载`
+- **completed**: `20 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -48,7 +48,7 @@
 | T4.2 | Claude SDK 调用 + prompt cache | done | 2026-05-01T18:15:00Z | 2026-05-01T19:05:00Z | 2d258b0 | `beta.messages` + `prompt-caching-2024-07-31`；集成测需 `ANTHROPIC_API_KEY` |
 | T4.3 | 子进程隔离工具 | done | 2026-05-01T20:20:00Z | 2026-05-01T21:05:00Z | c1c87ef | `memLimitBytes`/`cpuLimitSec` 可覆盖；默认 8GiB / 600s |
 | T4.4 | 验证（tsc + render smoke） | done | 2026-05-01T22:30:00Z | 2026-05-01T23:14:00Z | f0e887b | `RUN_VISUAL_VALIDATE=0` 跳过 render 集成 |
-| T4.5 | visuals 命令组装 | pending | — | — | — | — |
+| T4.5 | visuals 命令组装 | done | 2026-05-02T12:00:00Z | 2026-05-02T12:45:00Z | 7eb5c3f | `CompiledBlock` 允许可选 `audio` + `visual.componentPath`；生成顺序执行以满足「失败不启下一块」验收 |
 | T5.1 | theme + 字体加载 | pending | — | — | — | — |
 | T5.2 | SubtitleOverlay | pending | — | — | — | — |
 | T5.3 | BlockFrame + animations | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T4.5 — visuals 命令组装 @ 7eb5c3f
+- acceptance: mock Claude：首轮 tsc 错 → 第二轮通过 → 组件落盘 + `script.json` 含 `componentPath` → ✓；3 轮皆败 → 退出抛错、`generateComponentTsx` 未调用第二块 → ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/cli/visuals.ts` / `src/ai/component-cache-key.ts` / `bin/autovideo.ts` / `src/types/script.ts` / `tests/visuals-cli.test.ts` / `tests/component-cache-key.test.ts`
+- 备注：`p-limit` 用于并行 cache hit 复制；Claude + 校验按块顺序执行以满足失败语义；system prompt = `component.md` + 注入 theme JSON
 
 ### T4.4 — 验证（tsc + render smoke） @ f0e887b
 - acceptance: 禁止 import → 静态扫描拦截 → ✓；类型错误 tsx → `runIsolated` tsc 失败 + stderr 前 50 行 → ✓；合法 tsx + `renderStill` → 非纯色 PNG → ✓（默认跑集成；`RUN_VISUAL_VALIDATE=0` 跳过）；`npm run test` + `npm run build` → ✓
@@ -255,6 +260,12 @@
 - 选择方案：`CleanCacheOptions` 中各条件按 AND 收敛；仅当 `type`/`olderThanMs`/`stale` 全部满足（已指定的项）时删除。
 - 备选方案：OR — 易删掉仍应保留的条目。
 - 影响范围：`CacheStore.clean`；T2.2 CLI 应保持一致。
+
+### 2026-05-02 12:35 | T4.5
+- 模糊点：TASKS 要求「p-limit 并发处理块」，验收要求「3 轮失败 → 其他块未启动」。
+- 选择方案：`anthropic.concurrency` 控制并行 **component cache get + 磁盘复制**；对需生成的块 **顺序** 调用 Claude → validate → retry，首块失败后不再调用后续块的 API。
+- 备选方案：全程并行多块 Claude — 违背验收与其它块 API「未启动」语义。
+- 影响范围：仅 `src/cli/visuals.ts` 调度逻辑。
 
 ### 2026-05-01 23:10 | T4.4
 - 模糊点：TASKS 要求 tsc 在 build out 写 `tsconfig.visuals.json`，但未说明在**临时目录**跑 `tsc` 时如何解析 `compilerOptions.types: ["react","remotion"]`。

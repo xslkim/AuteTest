@@ -147,11 +147,9 @@ export interface Script {
 }
 
 /** Stage readiness — TS 层收紧；IR JSON 仍用单一宽松 schema 校验结构 */
-export type CompiledBlock = Omit<
-  Block,
-  "audio" | "timing" | "render" | "visual"
-> & {
-  visual: { description: string };
+export type CompiledBlock = Omit<Block, "timing" | "render" | "visual"> & {
+  /** compile 输出无此字段；visuals 成功后写回 */
+  visual: { description: string; componentPath?: string };
 };
 
 export type CompiledScript = Omit<Script, "blocks"> & {
@@ -311,11 +309,27 @@ const compiledBlockSchema = z
     title: z.string(),
     enter: animationPresetSchema,
     exit: animationPresetSchema,
-    visual: z.object({ description: z.string() }),
+    visual: z.object({
+      description: z.string(),
+      componentPath: z.string().optional(),
+    }),
     narration: z.object({
       lines: z.array(narrationLineSchema),
       explicitDurationSec: z.number().optional(),
     }),
+    audio: z
+      .object({
+        wavPath: z.string(),
+        durationSec: z.number(),
+        lineTimings: z.array(
+          z.object({
+            lineIndex: z.number(),
+            startMs: z.number(),
+            endMs: z.number(),
+          }),
+        ),
+      })
+      .optional(),
   })
   .strict();
 
