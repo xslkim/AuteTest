@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T4.4`
-- **last_updated**: `2026-05-01T21:05:00Z`
-- **next_action**: `开始 T4.4 — 验证（tsc + render smoke）`
+- **last_updated**: `2026-05-01T22:30:00Z`
+- **next_action**: `实现 validateStatic / validateRenderSmoke；跑 vitest + tsc`
 - **completed**: `18 / 35`
 - **blockers**: `0`
 
@@ -47,7 +47,7 @@
 | T4.1 | prompt + 组件骨架 | done | 2026-05-01T17:30:00Z | 2026-05-01T17:55:00Z | 59bb212 | `prompt-version.ts` 与 cache CLI 共用 MD5 前缀 |
 | T4.2 | Claude SDK 调用 + prompt cache | done | 2026-05-01T18:15:00Z | 2026-05-01T19:05:00Z | 2d258b0 | `beta.messages` + `prompt-caching-2024-07-31`；集成测需 `ANTHROPIC_API_KEY` |
 | T4.3 | 子进程隔离工具 | done | 2026-05-01T20:20:00Z | 2026-05-01T21:05:00Z | c1c87ef | `memLimitBytes`/`cpuLimitSec` 可覆盖；默认 8GiB / 600s |
-| T4.4 | 验证（tsc + render smoke） | pending | — | — | — | — |
+| T4.4 | 验证（tsc + render smoke） | in_progress | 2026-05-01T22:30:00Z | — | — | validate.ts + tsconfig 模板 |
 | T4.5 | visuals 命令组装 | pending | — | — | — | — |
 | T5.1 | theme + 字体加载 | pending | — | — | — | — |
 | T5.2 | SubtitleOverlay | pending | — | — | — | — |
