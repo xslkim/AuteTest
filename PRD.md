@@ -1065,6 +1065,7 @@ CI：GitHub Actions 跑除 E2E 之外的全部；E2E 在本地 / 周期性运行
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
     "@remotion/bundler": "^4.0.0",
+    "@remotion/cli": "^4.0.0",          // remotion.config.ts 中 Config（@remotion/cli/config）
     "@remotion/renderer": "^4.0.0",
     "@remotion/google-fonts": "^4.0.0",  // CJK + emoji 字体显式 loadFont（§13.3）
     "commander": "^12.0.0",

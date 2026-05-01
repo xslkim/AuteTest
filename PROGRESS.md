@@ -131,4 +131,10 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | §13.1 Node 依赖 | 增加 `@remotion/cli`
+- PRD 原描述：`dependencies` 仅列出 `@remotion/bundler`、`@remotion/renderer`、`remotion` 等，未列 `Config` 来源包。
+- 实际实现：`remotion.config.ts` 使用 `import { Config } from "@remotion/cli/config"`，故在 `package.json` 中显式加入 `"@remotion/cli": "^4.0.0"`，与 §13.1 示例 JSON 已对齐。
+- 原因：Remotion 4 的 `Config` 由 `@remotion/cli` 提供；缺少该依赖时 TypeScript 无法解析 `remotion.config.ts`。
+- PRD 是否同步更新：是（与本条同 commit）
+
+（开发中由 agent 继续追加）
