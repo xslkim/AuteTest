@@ -201,7 +201,7 @@ export function parseMetaFile(input: ParseMetaFileInput): ParsedMeta {
   const slugRaw = merged.slug?.trim();
   const slug = slugRaw !== undefined && slugRaw !== "" ? slugRaw : undefined;
 
-  const subtitleSafeBottom = Math.round(dims.height * 0.15);
+  const subtitleSafeBottom = Math.floor(dims.height * 0.15);
 
   return {
     title,

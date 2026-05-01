@@ -1,0 +1,73 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`compile fixture > 2 blocks + asset → stable CompiledScript snapshot 1`] = `
+{
+  "artifacts": {
+    "compiledAt": "2026-05-01T12:34:56.789Z",
+  },
+  "assets": {
+    "extra/pix/diagram.png": "assets/8feea4e2.png",
+  },
+  "blocks": [
+    {
+      "enter": "fade",
+      "exit": "fade",
+      "id": "B01",
+      "narration": {
+        "lines": [
+          {
+            "highlights": [],
+            "text": "第一行字幕",
+            "ttsText": "第一行字幕",
+          },
+          {
+            "highlights": [
+              {
+                "end": 6,
+                "start": 4,
+              },
+            ],
+            "text": "这里有 **强调** 词",
+            "ttsText": "这里有 强调 词",
+          },
+        ],
+      },
+      "title": "Block Alpha",
+      "visual": {
+        "description": "显示图片 assets/8feea4e2.png",
+      },
+    },
+    {
+      "enter": "fade",
+      "exit": "fade",
+      "id": "B02",
+      "narration": {
+        "lines": [
+          {
+            "highlights": [],
+            "text": "Beta 单行",
+            "ttsText": "Beta 单行",
+          },
+        ],
+      },
+      "title": "Block Beta",
+      "visual": {
+        "description": "纯白背景",
+      },
+    },
+  ],
+  "meta": {
+    "aspect": "16:9",
+    "fps": 30,
+    "height": 1080,
+    "schemaVersion": "1.0",
+    "subtitleSafeBottom": 162,
+    "theme": "dark-code",
+    "title": "T15 Snapshot Fixture",
+    "voiceRef": "<absolute path stripped>",
+    "width": 1920,
+  },
+}
+`;
+
+exports[`slugifyTitle > converts mixed CJK/Latin titles for path-safe slug 1`] = `"yan-shi-di-yi-ke-hello"`;
