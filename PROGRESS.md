@@ -316,6 +316,12 @@
 - 备选方案：无后缀裸路径 —  bundler 易无法解析 `.tsx` 入口。
 - 影响范围：仅 `remotion/VideoComposition.tsx`。
 
+### 2026-05-01 11:45 | T6.1
+- 模糊点：TASKS 示例 `calculateMetadata` 直接使用 `block.timing.frames`，若块尚无 `timing`（§6.4 步骤 1 未完成）或 `blockId` 非法会得到运行时错误。
+- 选择方案：`generateRenderRootTsx` 在写出文件前遍历 `script.blocks`，任一缺少 `timing` 即抛错并指明块 ID；非法 `blockId` 留给后续 render 组装阶段与 Remotion 选型校验。
+- 备选方案：在生成字符串内插入 `block?.timing?.frames ?? 1` — 掩盖配置错误，易产生静默错误成片。
+- 影响范围：仅 `src/render/root-render.ts`；与 §6.4「先算 timing 再写 Root」顺序一致。
+
 ### 2026-05-01 14:40 | T5.3
 - 模糊点：PRD TASKS 只写「末段 exit 动画」，未写 `exit` 与 `enter` 同一 preset 时是「同向再播」还是「反向收束」。
 - 选择方案：exit 段用 `exitFn(1 - localProgress)`，使 `t=0` 为完全可见、`t=1` 回到动画起点样式，与入场互补对称（fade-up 出场 = 下移 + 淡出）。
