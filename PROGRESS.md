@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T8.2`
-- **last_updated**: `2026-05-02T15:00:00Z`
-- **next_action**: `实现 §7 doctor 11 项检查 + 单测`
-- **completed**: `34 / 35`
+- **active_task**: `T8.3`
+- **last_updated**: `2026-05-02T15:35:00Z`
+- **next_action**: `开始 T8.3 — init + templates`
+- **completed**: `35 / 40`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -63,7 +63,7 @@
 | T7.1 | Root.tsx 生成器（preview 模式） | done | 2026-05-02T12:10:00Z | 2026-05-02T12:42:00Z | 17353aa | per-block Composition；无有效 lineTimings 时均匀占位字幕 |
 | T7.2 | preview 命令 | done | 2026-05-02T14:00:00Z | 2026-05-02T14:30:00Z | f47458a | `remotion-root-preview.tsx`；`AUTVIDEO_REMOTION_ENTRY`；`--block` 默认 `--port=3333` + `xdg-open` |
 | T8.1 | build orchestrator | done | 2026-05-02T13:02:00Z | 2026-05-02T13:11:00Z | 8a2ce5d | 子 stage 用 `cwd=build-out`、`script.json` 相对路径；不经 `process.chdir`（Vitest worker 限制） |
-| T8.2 | doctor | in_progress | 2026-05-02T15:00:00Z | — | — | — |
+| T8.2 | doctor | done | 2026-05-02T15:00:00Z | 2026-05-02T15:35:00Z | 0ee7d50 | 退出码 0/1/2；`doctor` 允许 `--config`/`--cache-dir` |
 | T8.3 | init + templates | pending | — | — | — | — |
 | T9.1 | 单测补全 | pending | — | — | — | — |
 | T9.2 | E2E 测试 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T8.2 — doctor @ 0ee7d50
+- acceptance：§7 表 11 项 + PASS/WARN/FAIL + 修复指引 → ✓；退出码 0（全 PASS）/1（有 WARN 无 FAIL）/2（有 FAIL）→ ✓；本机未装齐模型与 key 时 doctor 打出 FAIL + 退出 2 → ✓；`npm run build` + `npm run test` → ✓
+- artifacts: `src/cli/doctor.ts` / `bin/autovideo.ts` / `tests/doctor-cli.test.ts`
+- 备注：`Chromium` 用 `ensureBrowser`；`Claude API 连通` 在无 key 时为 WARN 跳过，有 key 时最小 `messages.create`；磁盘 <1GiB → FAIL，<5GiB → WARN
 
 ### T8.1 — build orchestrator @ 8a2ce5d
 - acceptance：`--block` 报错并提示分步命令 → ✓；顺序 compile → tts → visuals → render、阶段失败抛出 → ✓；子 stage `cwd`=build-out（等同 §10）；mock E2E 产出 `final_normalized.mp4` → ✓；`npm run build` + `npm run test` → ✓
@@ -264,6 +269,12 @@
 > - 选择方案：<采纳的实现>
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
+
+### 2026-05-02 15:33 | T8.2
+- 模糊点：PRD §7 未写明「Claude API 连通」在无 key 时是 FAIL 还是跳过。
+- 选择方案：无有效 API key 时该项为 WARN（详情「跳过（无 API key）」），避免与「Claude API key」FAIL 重复惩罚；有 key 时对当前 `anthropic.model` 发最小 `messages.create` 验证连通，失败为 WARN。
+- 备选方案：无 key 也 FAIL 两次 — 噪声大。
+- 影响范围：仅 `src/cli/doctor.ts`。
 
 ### 2026-05-02 13:10 | T8.1
 - 模糊点：PRD §10 写各 stage 进程的 cwd 统一到 build out。
