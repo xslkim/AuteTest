@@ -97,7 +97,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 09:30 | T0.1
+- 模糊点：PRD §13.1 未列出 `@remotion/cli`，但 Remotion 4 官方要求 `remotion.config.ts` 从 `@remotion/cli/config` 导入 `Config`。
+- 选择方案：在 `dependencies` 中增加 `"@remotion/cli": "^4.0.0"`，与其它 Remotion 包主版本对齐。
+- 备选方案：从 `remotion` 包导入旧版 `Config` — v4 已迁移，易编译或运行时失败。
+- 影响范围：仅 `package.json`；与 §13.1 列表相比多一项 CLI 包，属渲染管线必要配套。
 
 ---
 
