@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T3.4`
-- **last_updated**: `2026-05-01T14:05:00Z`
-- **next_action**: `实现 src/tts/timings.ts + tests/timings.test.ts，跑 test/build`
-- **completed**: `13 / 35`
+- **active_task**: `T3.5`
+- **last_updated**: `2026-05-01T14:15:00Z`
+- **next_action**: `开始 T3.5 — tts 命令组装`
+- **completed**: `14 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -42,7 +42,7 @@
 | T3.1 | VoxCPM FastAPI wrapper | done | 2026-05-02T12:00:00Z | 2026-05-02T12:50:00Z | 769b75b | — |
 | T3.2 | voxcpm-client + autoStart | done | 2026-05-01T10:30:43Z | 2026-05-01T10:32:48Z | 3ac0baa | 集成测 `RUN_VOXCPM_INTEGRATION=1` |
 | T3.3 | ffmpeg helpers | done | 2026-05-01T10:35:00Z | 2026-05-01T10:37:00Z | 0fcbb40 | `anullsrc` fixture；concat 用临时 concat demuxer |
-| T3.4 | lineTimings 计算 | in_progress | 2026-05-01T14:05:00Z | — | — | — |
+| T3.4 | lineTimings 计算 | done | 2026-05-01T14:05:00Z | 2026-05-01T14:12:00Z | cad58d4 | 第 1 行 `startMs=0`，与 §6.2.3 公式一致 |
 | T3.5 | tts 命令组装 | pending | — | — | — | — |
 | T4.1 | prompt + 组件骨架 | pending | — | — | — | — |
 | T4.2 | Claude SDK 调用 + prompt cache | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T3.4 — lineTimings 计算 @ cad58d4
+- acceptance: `computeLineTimings([1,0.5,2])` → `[{0,1000},{1200,1700},{1900,3900}]`（§6.2.3 + 行间 200 ms）→ ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/tts/timings.ts` / `tests/timings.test.ts`
+- 备注：`lineSpeechDurationsSec` 为对白时长（秒），不含行尾 200 ms 静音；`endMs` 为对白结束时刻
 
 ### T3.3 — ffmpeg helpers @ 0fcbb40
 - acceptance: `appendSilence` + `wavDurationSec`：1s + 200ms → 1.2s ±1ms → ✓；`concatWavs` + 时长、空参/缺文件报错 → ✓；`npm run test` + `npm run build` → ✓
