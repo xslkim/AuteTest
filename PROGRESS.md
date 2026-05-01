@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T8.3`
-- **last_updated**: `2026-05-02T15:35:00Z`
-- **next_action**: `开始 T8.3 — init + templates`
+- **last_updated**: `2026-05-02T18:00:00Z`
+- **next_action**: `实现 starter 模板 + runInitCommand + CLI 接线`
 - **completed**: `35 / 40`
 - **blockers**: `0`
 
@@ -64,7 +64,7 @@
 | T7.2 | preview 命令 | done | 2026-05-02T14:00:00Z | 2026-05-02T14:30:00Z | f47458a | `remotion-root-preview.tsx`；`AUTVIDEO_REMOTION_ENTRY`；`--block` 默认 `--port=3333` + `xdg-open` |
 | T8.1 | build orchestrator | done | 2026-05-02T13:02:00Z | 2026-05-02T13:11:00Z | 8a2ce5d | 子 stage 用 `cwd=build-out`、`script.json` 相对路径；不经 `process.chdir`（Vitest worker 限制） |
 | T8.2 | doctor | done | 2026-05-02T15:00:00Z | 2026-05-02T15:35:00Z | 0ee7d50 | 退出码 0/1/2；`doctor` 允许 `--config`/`--cache-dir` |
-| T8.3 | init + templates | pending | — | — | — | — |
+| T8.3 | init + templates | in_progress | 2026-05-02T18:00:00Z | — | — | — |
 | T9.1 | 单测补全 | pending | — | — | — | — |
 | T9.2 | E2E 测试 | pending | — | — | — | — |
 | T9.3 | install.sh | pending | — | — | — | — |
