@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T6.1`
-- **last_updated**: `2026-05-01T16:05:00Z`
-- **next_action**: `开始 T6.1 — Root.tsx 生成器（render 模式）`
+- **last_updated**: `2026-05-01T11:43:07Z`
+- **next_action**: `实现 src/render/root-render.ts + 快照单测，随后 chore(T6.1): done`
 - **completed**: `24 / 35`
 - **blockers**: `0`
 
@@ -53,7 +53,7 @@
 | T5.2 | SubtitleOverlay | done | 2026-05-01T12:00:00Z | 2026-05-01T12:08:00Z | c3425f5 | `npx remotion studio remotion/studio-subtitle-overlay.tsx` Composition `SubtitleOverlayDemo` |
 | T5.3 | BlockFrame + animations | done | 2026-05-01T14:00:00Z | 2026-05-01T14:45:00Z | cd4dfd5 | Studio `BlockFrameFadeUpDemo` |
 | T5.4 | BlockComposition（render 用） | done | 2026-05-01T16:00:00Z | 2026-05-01T16:05:00Z | 1884447 | fixture：`public/script.json`、`public/audio/B01.wav`、`src/blocks/B01` |
-| T6.1 | Root.tsx 生成器（render 模式） | pending | — | — | — | — |
+| T6.1 | Root.tsx 生成器（render 模式） | in_progress | 2026-05-01T11:43:07Z | — | — | — |
 | T6.2 | timing 计算 | pending | — | — | — | — |
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | pending | — | — | — | — |
 | T6.4 | ffmpeg concat | pending | — | — | — | — |
