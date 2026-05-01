@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T5.4`
-- **last_updated**: `2026-05-01T14:45:00Z`
-- **next_action**: `开始 T5.4 — BlockComposition（render 用）`
-- **completed**: `23 / 35`
+- **active_task**: `T6.1`
+- **last_updated**: `2026-05-01T16:05:00Z`
+- **next_action**: `开始 T6.1 — Root.tsx 生成器（render 模式）`
+- **completed**: `24 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -52,7 +52,7 @@
 | T5.1 | theme + 字体加载 | done | 2026-05-01T11:19:15Z | 2026-05-01T11:22:09Z | 84723da | `getTheme`；Noto Sans SC + Noto Color Emoji + JetBrains Mono |
 | T5.2 | SubtitleOverlay | done | 2026-05-01T12:00:00Z | 2026-05-01T12:08:00Z | c3425f5 | `npx remotion studio remotion/studio-subtitle-overlay.tsx` Composition `SubtitleOverlayDemo` |
 | T5.3 | BlockFrame + animations | done | 2026-05-01T14:00:00Z | 2026-05-01T14:45:00Z | cd4dfd5 | Studio `BlockFrameFadeUpDemo` |
-| T5.4 | BlockComposition（render 用） | pending | — | — | — | — |
+| T5.4 | BlockComposition（render 用） | done | 2026-05-01T16:00:00Z | 2026-05-01T16:05:00Z | 1884447 | fixture：`public/script.json`、`public/audio/B01.wav`、`src/blocks/B01` |
 | T6.1 | Root.tsx 生成器（render 模式） | pending | — | — | — | — |
 | T6.2 | timing 计算 | pending | — | — | — | — |
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T5.4 — BlockComposition（render 用） @ 1884447
+- acceptance: Studio 单块见组件 + 字幕 + 音频在 enter 帧后对齐 → ✓（`BlockCompositionB01Demo`，`npx remotion compositions remotion/studio-block-composition.tsx`）；`npm run build` → ✓；`npm run test` → ✓
+- artifacts: `remotion/VideoComposition.tsx` / `remotion/load-script-runtime.ts` / `remotion/studio-block-composition.tsx` / `public/script.json` / `public/audio/B01.wav` / `src/blocks/B01/Component.tsx`
+- 备注：`staticFile(audio/...)`；`lazy(() => import(\`../src/blocks/${blockId}/Component.js\`))`；无 `timing` 时用 §9 默认 enter/exit 秒数 + `minHoldSec` 与 `audio.durationSec` 推导帧长
 
 ### T5.3 — BlockFrame + animations @ cd4dfd5
 - acceptance: Remotion Studio：`fade-up` 块进入自下方滑入 + 渐显 → ✓（`BlockFrameFadeUpDemo`，`npx remotion compositions remotion/studio-block-frame.tsx`）；`npm run build` → ✓；`npm run test` → ✓
@@ -299,6 +304,12 @@
 - 选择方案：`fonts.mono` 使用 `JetBrains Mono`（`@remotion/google-fonts/JetBrainsMono`），与代码教学场景一致；`loadFont` 仅拉 latin/latin-ext/cyrillic 子集与 400 字重。
 - 备选方案：`fonts.mono` 仍用 `monospace` 通用族 — 与 CJK 混排时跨机 fallback 不一致。
 - 影响范围：仅 `remotion/engine/theme.ts`；后续主题可另定 mono。
+
+### 2026-05-01 16:03 | T5.4
+- 模糊点：TASKS 写 lazy `import(\`../src/blocks/${blockId}/Component\`)`（无后缀）；Remotion/webpack 动态 import 常见需解析到 `.tsx`。
+- 选择方案：`import(\`../src/blocks/${blockId}/Component.js\`)`，与仓库 NodeNext/`extensionAlias` 约定一致。
+- 备选方案：无后缀裸路径 —  bundler 易无法解析 `.tsx` 入口。
+- 影响范围：仅 `remotion/VideoComposition.tsx`。
 
 ### 2026-05-01 14:40 | T5.3
 - 模糊点：PRD TASKS 只写「末段 exit 动画」，未写 `exit` 与 `enter` 同一 preset 时是「同向再播」还是「反向收束」。
