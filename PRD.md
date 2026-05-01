@@ -596,7 +596,7 @@ Content-Type: application/json
    ```
    `-c copy` 是流复制，无重编码，秒级完成。要求所有 partial 的编码参数（codec、分辨率、fps、像素格式、SAR、profile/level）严格一致——Remotion 已统一这些参数，但 stage 启动前用 `ffprobe` 抽样校验，不一致则报错（防止编码漂移）。
    - **PTS 处理**：`-fflags +genpts` + `-avoid_negative_ts make_zero` 重建 / 归零跨文件 PTS，避免 H.264 + AAC concat 在边界出现 PTS 不连续导致播放器卡顿或 A/V 失同步
-   - **GOP 起点对齐 IDR**：每个 partial 必须以 IDR 关键帧开头才能被流复制 concat。`remotion.config.ts` 中显式 `setKeyframeInterval(1)`（或等价配置）保证 Remotion 输出的每段 mp4 首帧都是 IDR；否则少数情况会出现首帧绿屏 / 丢帧
+   - **GOP 起点对齐 IDR**：每个 partial 必须以 IDR 关键帧开头才能被流复制 concat。`remotion.config.ts` 中通过 `Config.overrideFfmpegCommand` 在 `libx264` 编码参数后注入 `-g 1 -keyint_min 1`（或 Remotion 未来提供的等价 API）保证 Remotion 输出的每段 mp4 首帧都是 IDR；否则少数情况会出现首帧绿屏 / 丢帧。（Remotion 4 已移除 `setKeyframeInterval`。）
 
 7. **响度标准化**：ffmpeg `loudnorm` two-pass（默认 `I=-16 TP=-1.5 LRA=11`，参数从 `render.loudnorm` 读取）→ `output/final_normalized.mp4`
    - 第 1 遍 `-af loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json -f null -` 解析 stderr 中的 JSON（measured_I / measured_TP / measured_LRA / measured_thresh / target_offset）

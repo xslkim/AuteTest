@@ -97,7 +97,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 12:45 | T0.1
+- 模糊点：TASKS T0.1 / PRD §6.4 要求 `Config.setKeyframeInterval(1)`，当前 `@remotion/cli` 4.0.x 的 `FlatConfig` 类型中无此方法（已移除）。
+- 选择方案：在 `remotion.config.ts` 使用 `Config.overrideFfmpegCommand`，当 `type === "stitcher"` 且在 `-c:v libx264` 之后插入 `-g 1 -keyint_min 1`，并同步修订 PRD 表述。
+- 备选方案：升级/降级 Remotion 以恢复 API（未采纳：锁定 PRD §13.1 的 `^4.0.0` 依赖范围）。
+- 影响范围：仅 `remotion.config.ts` 与 PRD 文档；后续 render 阶段验证 GOP 行为时仍可调整 override 逻辑。
 
 ---
 
