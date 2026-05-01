@@ -1,0 +1,295 @@
+{
+  "$ref": "#/definitions/Script",
+  "definitions": {
+    "Script": {
+      "type": "object",
+      "properties": {
+        "meta": {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "type": "string",
+              "const": "1.0"
+            },
+            "title": {
+              "type": "string"
+            },
+            "voiceRef": {
+              "type": "string"
+            },
+            "aspect": {
+              "type": "string",
+              "enum": [
+                "16:9",
+                "9:16",
+                "1:1"
+              ]
+            },
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            },
+            "fps": {
+              "type": "number"
+            },
+            "theme": {
+              "type": "string"
+            },
+            "subtitleSafeBottom": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "title",
+            "voiceRef",
+            "aspect",
+            "width",
+            "height",
+            "fps",
+            "theme",
+            "subtitleSafeBottom"
+          ],
+          "additionalProperties": false
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "enter": {
+                "type": "string",
+                "enum": [
+                  "fade",
+                  "fade-up",
+                  "fade-down",
+                  "slide-left",
+                  "slide-right",
+                  "zoom-in",
+                  "zoom-out",
+                  "none"
+                ]
+              },
+              "exit": {
+                "type": "string",
+                "enum": [
+                  "fade",
+                  "fade-up",
+                  "fade-down",
+                  "slide-left",
+                  "slide-right",
+                  "zoom-in",
+                  "zoom-out",
+                  "none"
+                ]
+              },
+              "visual": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "componentPath": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "description"
+                ],
+                "additionalProperties": false
+              },
+              "narration": {
+                "type": "object",
+                "properties": {
+                  "lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string"
+                        },
+                        "ttsText": {
+                          "type": "string"
+                        },
+                        "highlights": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "start": {
+                                "type": "number"
+                              },
+                              "end": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "start",
+                              "end"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "text",
+                        "ttsText",
+                        "highlights"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "explicitDurationSec": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "lines"
+                ],
+                "additionalProperties": false
+              },
+              "audio": {
+                "type": "object",
+                "properties": {
+                  "wavPath": {
+                    "type": "string"
+                  },
+                  "durationSec": {
+                    "type": "number"
+                  },
+                  "lineTimings": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "lineIndex": {
+                          "type": "number"
+                        },
+                        "startMs": {
+                          "type": "number"
+                        },
+                        "endMs": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "lineIndex",
+                        "startMs",
+                        "endMs"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "wavPath",
+                  "durationSec",
+                  "lineTimings"
+                ],
+                "additionalProperties": false
+              },
+              "timing": {
+                "type": "object",
+                "properties": {
+                  "enterSec": {
+                    "type": "number"
+                  },
+                  "holdSec": {
+                    "type": "number"
+                  },
+                  "exitSec": {
+                    "type": "number"
+                  },
+                  "totalSec": {
+                    "type": "number"
+                  },
+                  "frames": {
+                    "type": "number"
+                  },
+                  "enterFrames": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "enterSec",
+                  "holdSec",
+                  "exitSec",
+                  "totalSec",
+                  "frames",
+                  "enterFrames"
+                ],
+                "additionalProperties": false
+              },
+              "render": {
+                "type": "object",
+                "properties": {
+                  "partialPath": {
+                    "type": "string"
+                  },
+                  "cacheHit": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "partialPath",
+                  "cacheHit"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "enter",
+              "exit",
+              "visual",
+              "narration"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "artifacts": {
+          "type": "object",
+          "properties": {
+            "compiledAt": {
+              "type": "string"
+            },
+            "audioGeneratedAt": {
+              "type": "string"
+            },
+            "visualsGeneratedAt": {
+              "type": "string"
+            },
+            "renderedAt": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "assets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "meta",
+        "blocks",
+        "artifacts",
+        "assets"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

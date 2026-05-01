@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "schemaVersion": "1.0",
+    "title": "最小示例",
+    "voiceRef": "/tmp/example.wav",
+    "aspect": "16:9",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "theme": "dark-code",
+    "subtitleSafeBottom": 162
+  },
+  "blocks": [
+    {
+      "id": "B01",
+      "title": "引言",
+      "enter": "fade",
+      "exit": "fade",
+      "visual": {
+        "description": "标题居中"
+      },
+      "narration": {
+        "lines": [
+          {
+            "text": "你好世界",
+            "ttsText": "你好世界",
+            "highlights": []
+          }
+        ]
+      }
+    }
+  ],
+  "artifacts": {},
+  "assets": {}
+}
