@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T05:35:00Z`
-- **next_action**: `实现仓库骨架并完成验收`
-- **completed**: `0 / 35`
+- **active_task**: `—`
+- **last_updated**: `2026-05-01T06:10:00Z`
+- **next_action**: `从 T0.2（类型定义 + Schema）开始`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T05:35:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T05:35:00Z | 2026-05-01T06:10:00Z | b05d7b2a2d3a2c74061ba9a6ff3697687d40922e | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,11 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ b05d7b2a2d3a2c74061ba9a6ff3697687d40922e
+
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 "not implemented" → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`.gitignore`、`bin/autovideo.ts`
+- 备注：CI 镜像未预装 Node 时通过 apt 安装了 `nodejs`/`npm` 以运行验收命令；Ubuntu 套件提供 Node v18。
 
 ---
 
