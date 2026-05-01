@@ -6,19 +6,19 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:05:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin CLI / .gitignore`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T13:45:00Z`
+- **next_action**: `启动 T0.2（类型定义 + Schema）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
 
-1. [x] 已读 `PRD.md` 全文
-2. [x] 已读 `TASKS.md` 全文
-3. [x] 已读本文件，确认 `active_task` 与 `next_action`
-4. [x] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（无 done 任务则跳过比对）
+1. [ ] 已读 `PRD.md` 全文
+2. [ ] 已读 `TASKS.md` 全文
+3. [ ] 已读本文件，确认 `active_task` 与 `next_action`
+4. [ ] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
+5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致
 
 ---
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:05:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T13:45:00Z | 4c6b186 | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,11 +81,20 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ 4c6b186
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`remotion-config.d.ts`、`bin/autovideo.ts`、`.gitignore`
+- 备注：环境中通过 apt 安装 Node 18 以满足 `npm install`；CI 建议 Node ≥20（见 PRD §7）。新增 `remotion-config.d.ts` 为 `remotion/config` 提供 TS 解析。
 
 ---
 
 ## 决策日志（遇到 PRD 模糊点时记录）
+
+### 2026-05-01 13:45 | T0.1
+- 模糊点：PRD §8 / TASKS 要求 `remotion.config.ts` 使用 `remotion/config`，当前 `@types`/包导出未提供该子路径的 TypeScript 解析。
+- 选择方案：仓库根增加最小 `remotion-config.d.ts` 声明 `Config.setKeyframeInterval` / `Config.setVideoImageFormat`，并纳入 `tsconfig.json` include。
+- 备选方案：改用 `@ts-expect-error` 或 `skipLibCheck` 掩盖——会降低类型安全。
+- 影响范围：仅配置文件的类型检查；运行时仍以 Remotion 加载 `remotion.config.ts` 为准。
 
 > 当 PRD 中某处描述模糊但 agent 自行决定继续（**不阻塞、不报告人类**）时，必须在这里记录决策。后续如果决策错了，可以按时间倒查。
 >
