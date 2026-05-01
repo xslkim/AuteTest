@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.3`
-- **last_updated**: `2026-05-01T14:43:30Z`
-- **next_action**: `开始 T1.1 — 项目文件 + meta 解析`
-- **completed**: `3 / 35`
+- **active_task**: `T1.2`
+- **last_updated**: `2026-05-01T17:50:00Z`
+- **next_action**: `开始 T1.2 — 块解析 + directive`
+- **completed**: `4 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -32,7 +32,7 @@
 | T0.1 | 仓库骨架 | done | 2026-05-01T09:26:26Z | 2026-05-01T09:28:36Z | aa66616 | — |
 | T0.2 | 类型定义 + Schema | done | 2026-05-01T12:00:00Z | 2026-05-01T12:45:00Z | f6fc71d | — |
 | T0.3 | 配置 loader | done | 2026-05-01T14:10:00Z | 2026-05-01T14:43:30Z | f96724c | — |
-| T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
+| T1.1 | 项目文件 + meta 解析 | done | 2026-05-01T16:00:00Z | 2026-05-01T17:50:00Z | e33ff88 | — |
 | T1.2 | 块解析 + directive | pending | — | — | — | — |
 | T1.3 | 旁白预处理 | pending | — | — | — | — |
 | T1.4 | 资产 hash 复制 | pending | — | — | — | — |
@@ -86,6 +86,11 @@
 - artifacts: `package.json` / `package-lock.json` / `tsconfig.json` / `remotion.config.ts` / `bin/autovideo.ts` / `.gitignore`
 - 备注：环境经 apt 安装 `nodejs`/`npm` 后完成验收；`@remotion/cli` 见决策日志 T0.1。
 
+### T1.1 — 项目文件 + meta 解析 @ e33ff88
+- acceptance: 缺字段报错 → ✓；`voiceRef` 默认 `./B00.wav`（相对 meta 目录）并校验存在 → ✓；CLI override `title` / `fps` / `voiceRef` 生效 → ✓；`aspect` 16:9 / 9:16 / 1:1 映射分辨率 → ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/parser/project.ts` / `src/parser/meta.ts` / `tests/project-meta.test.ts`
+- 备注：`project.json` 仅允许 `meta` / `blocks` 顶层键（与 PRD 示例一致）；`meta.md` 允许 `slug:`（§7），非 `--meta` 字段；未知 meta 键报错以满足 §3.4 校验
+
 ### T0.3 — 配置 loader @ f96724c
 - acceptance: `--meta dotted.key` 报错 → ✓（单测）；`--meta title=foo` / `fps=30` 类型推断 → ✓；合并优先级（defaults < cwd `autovideo.config.json` < `--config`，且 `--cache-dir` 高于文件）→ ✓；`npm run test` + `tsc --noEmit` → ✓
 - artifacts: `src/config/types.ts` / `src/config/defaults.ts` / `src/config/load.ts` / `tests/config-loader.test.ts`
@@ -115,6 +120,12 @@
 - 选择方案：在 `dependencies` 中增加 `"@remotion/cli": "^4.0.0"`，与其它 Remotion 包主版本对齐。
 - 备选方案：从 `remotion` 包导入旧版 `Config` — v4 已迁移，易编译或运行时失败。
 - 影响范围：仅 `package.json`；与 §13.1 列表相比多一项 CLI 包，属渲染管线必要配套。
+
+### 2026-05-01 17:45 | T1.1
+- 模糊点：PRD §3.1 未声明 `project.json` 是否允许额外字段。
+- 选择方案：仅接受 `meta` 与 `blocks` 两个顶层键，其它键报错，避免静默忽略拼写错误。
+- 备选方案：忽略未知键 — 易掩盖配置错误，与「错误显式」原则冲突。
+- 影响范围：仅 `loadProjectFile`；用户若有扩展字段需另开约定。
 
 ### 2026-05-01 12:40 | T0.2
 - 模糊点：`BlockFrameProps.children` / 默认组件返回类型在纯 TS 模块中如何表达。
