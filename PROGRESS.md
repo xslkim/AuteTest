@@ -117,6 +117,12 @@
 
 （开发中由 agent 追加）
 
+### 2026-05-01 05:20 | T0.1
+- 模糊点：PRD `remotion.config.ts` 写明 `Config.setKeyframeInterval(1)`；当前 `@remotion/cli` v4 类型与运行时均无该方法。
+- 选择方案：`Config.overrideFfmpegCommand` 在 `type === "stitcher"` 且编码器为 `libx264` 时插入 `-g`、`1`，等价 GOP=1；并同步修订 PRD §6.4。
+- 备选方案：等待上游恢复 API — 会阻塞验收与 `tsc`。
+- 影响范围：仅 `remotion.config.ts` 与 PRD 文档；后续 render 阶段行为与 PRD 目标一致。
+
 ---
 
 ## 已知差异（实现与 PRD 的偏离）
