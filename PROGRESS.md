@@ -7,9 +7,9 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T6.2`
-- **last_updated**: `2026-05-01T14:00:00Z`
-- **next_action**: `实现 T6.2 — computeTimingForBlocks / applyBlockTimings；验收通过后 chore(done)`
-- **completed**: `25 / 35`
+- **last_updated**: `2026-05-01T14:35:00Z`
+- **next_action**: `开始 T6.3 — partial 渲染（程序化 bundle + renderMedia）`
+- **completed**: `26 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -54,7 +54,7 @@
 | T5.3 | BlockFrame + animations | done | 2026-05-01T14:00:00Z | 2026-05-01T14:45:00Z | cd4dfd5 | Studio `BlockFrameFadeUpDemo` |
 | T5.4 | BlockComposition（render 用） | done | 2026-05-01T16:00:00Z | 2026-05-01T16:05:00Z | 1884447 | fixture：`public/script.json`、`public/audio/B01.wav`、`src/blocks/B01` |
 | T6.1 | Root.tsx 生成器（render 模式） | done | 2026-05-01T11:43:07Z | 2026-05-01T11:45:12Z | 9a7395e | `calculateMetadata` 需 `block.timing`；缺少则生成器抛错 |
-| T6.2 | timing 计算 | in_progress | 2026-05-01T14:00:00Z | — | — | — |
+| T6.2 | timing 计算 | done | 2026-05-01T14:00:00Z | 2026-05-01T14:35:00Z | 8b7899b | `computeBlockTiming` / `applyTimingsToBlocks`；帧数与 `VideoComposition` fallback 对齐 |
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | pending | — | — | — | — |
 | T6.4 | ffmpeg concat | pending | — | — | — | — |
 | T6.5 | loudnorm two-pass | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T6.2 — timing 计算 @ 8b7899b
+- acceptance: fade-up 0.5s + hold 音频 3s + fade exit 0.3s @ 30fps → `frames === 114` → ✓；`npm run build` + `npm run test` → ✓
+- artifacts: `src/render/timing.ts` / `tests/render-timing.test.ts`
+- 备注：`none` 预设 enter/exit 秒数为 0；`holdSec` 取 max(audio, explicitDuration, minHold)；`holdFrames = max(1, round(holdSec*fps))`
 
 ### T6.1 — Root.tsx 生成器（render 模式） @ 9a7395e
 - acceptance: 单测快照生成 `remotion-root.tsx` 字符串 → ✓；`npm run build` + `npm run test` → ✓
@@ -315,6 +320,12 @@
 - 选择方案：`import(\`../src/blocks/${blockId}/Component.js\`)`，与仓库 NodeNext/`extensionAlias` 约定一致。
 - 备选方案：无后缀裸路径 —  bundler 易无法解析 `.tsx` 入口。
 - 影响范围：仅 `remotion/VideoComposition.tsx`。
+
+### 2026-05-01 14:32 | T6.2
+- 模糊点：PRD §6.4 step 1 仅给出 `hold` 的秒级公式，未写明 hold 对应帧数在 fps 下是否允许为 0。
+- 选择方案：`holdFrames = max(1, round(holdSec * fps))`，与当前 `remotion/VideoComposition.tsx` 无 `timing` 时的 fallback 一致，避免 0 帧 hold。
+- 备选方案：允许 `round` 为 0 — 会与现有 Studio fixture / fallback 行为分叉。
+- 影响范围：仅 `src/render/timing.ts`；render 阶段写入 `timing` 后 `VideoComposition` 走 `block.timing.frames`。
 
 ### 2026-05-01 11:45 | T6.1
 - 模糊点：TASKS 示例 `calculateMetadata` 直接使用 `block.timing.frames`，若块尚无 `timing`（§6.4 步骤 1 未完成）或 `blockId` 非法会得到运行时错误。
