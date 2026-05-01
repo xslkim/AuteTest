@@ -6,9 +6,9 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `—`
-- **last_updated**: `2026-05-01T11:20:00Z`
-- **next_action**: `从 T0.1 开始`
+- **active_task**: `T0.1`
+- **last_updated**: `2026-05-01T12:00:00Z`
+- **next_action**: `实现 package.json/tsconfig/remotion.config/bin 与验收`
 - **completed**: `0 / 35`
 - **blockers**: `0`
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | pending | — | — | — | — |
+| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:00:00Z | — | — | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -97,7 +97,12 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 12:05 | T0.1
+
+- **模糊点**：PRD §13.1 的 Node 依赖表未列出 `@remotion/cli`，但 TASK 要求在仓库根放置 `remotion.config.ts`，且 Remotion 官方约定从 `@remotion/cli/config` 导入 `Config`。
+- **选择方案**：在 `devDependencies` 中增加 `@remotion/cli`，版本与 `@remotion/bundler`、`remotion` 对齐（`^4.0.0`），以满足 `remotion.config.ts` 的类型与运行时解析。
+- **备选方案**：不写 `remotion.config.ts` — 不满足 TASK；或改用非官方路径 — 易与后续 Remotion CLI 脱节。
+- **影响范围**：仅 `package.json` / `npm install` 体积；后续 `remotion`/build 脚本将依赖同一包。
 
 ---
 
