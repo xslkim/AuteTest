@@ -7,4 +7,8 @@ node_modules/
 dist/
 build/
 .cache/
+.cache-test*/
+.conctest*/
+.cw/
+wav-*/
 *.log
