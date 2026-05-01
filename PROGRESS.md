@@ -270,6 +270,12 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
+### 2026-05-02 18:05 | T8.3
+- 模糊点：TASKS 未写 `init` 在目标不存在时是否创建父目录。
+- 选择方案：若 `<dir>` 不存在则 `mkdirSync(..., { recursive: true })`，支持 `nested/demo`。
+- 备选方案：要求用户预先创建目录 — 违背常见脚手架心智。
+- 影响范围：`src/cli/init.ts`。
+
 ### 2026-05-02 15:33 | T8.2
 - 模糊点：PRD §7 未写明「Claude API 连通」在无 key 时是 FAIL 还是跳过。
 - 选择方案：无有效 API key 时该项为 WARN（详情「跳过（无 API key）」），避免与「Claude API key」FAIL 重复惩罚；有 key 时对当前 `anthropic.model` 发最小 `messages.create` 验证连通，失败为 WARN。

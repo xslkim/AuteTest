@@ -9,11 +9,7 @@ import { runRenderCommand } from "../src/cli/render.js";
 import { runPreviewCommand } from "../src/cli/preview.js";
 import { runBuildCommand } from "../src/cli/build.js";
 import { runDoctorCommand } from "../src/cli/doctor.js";
-
-const notImplemented = (): never => {
-  console.error("not implemented");
-  process.exit(1);
-};
+import { runInitCommand } from "../src/cli/init.js";
 
 async function main(): Promise<void> {
   const program = new Command();
@@ -145,7 +141,13 @@ async function main(): Promise<void> {
     });
 
   program.command("init <dir>").description("Scaffold a starter project").action(() => {
-    notImplemented();
+    try {
+      runInitCommand({ argv: process.argv, cwd: process.cwd() });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(msg);
+      process.exit(1);
+    }
   });
 
   await program.parseAsync(process.argv);
