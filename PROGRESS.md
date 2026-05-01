@@ -6,19 +6,19 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:05:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin stub / .gitignore`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T13:30:00Z`
+- **next_action**: `开始 T0.2 — 类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
 
-1. [x] 已读 `PRD.md` 全文
-2. [x] 已读 `TASKS.md` 全文
-3. [x] 已读本文件，确认 `active_task` 与 `next_action`
-4. [x] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（尚无 done 任务）
+1. [ ] 已读 `PRD.md` 全文
+2. [ ] 已读 `TASKS.md` 全文
+3. [ ] 已读本文件，确认 `active_task` 与 `next_action`
+4. [ ] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
+5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致
 
 ---
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:05:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T13:30:00Z | e47e58c | GOP：overrideFfmpeg `-g 1` |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ e47e58c
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 展示全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`
+- 备注：环境 Node 18（apt）；PRD 要求 Node ≥20，`doctor` 将在后续任务校验。
 
 ---
 
@@ -97,7 +100,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 13:30 | T0.1
+- 模糊点：TASKS.md / PRD 写明 `Config.setKeyframeInterval(1)`；当前 `@remotion/cli` 4.0.x 类型与运行时均无该方法。
+- 选择方案：`Config.overrideFfmpegCommand` 在 stitcher、且 `-c:v` 非 `copy` 时在 `-movflags faststart` 前插入 `-g 1`，等价 GOP 间隔 1。
+- 备选方案：锁定旧版 Remotion（若有该方法）——与 PRD §13.1 `^4.0.0` 不符且不必要。
+- 影响范围：仅 `remotion.config.ts`；已同步修订 PRD §6.4 GOP 说明。
 
 ---
 
@@ -131,4 +138,10 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | §6.4 GOP | `setKeyframeInterval` 已移除
+- PRD 原描述：`remotion.config.ts` 中 `Config.setKeyframeInterval(1)`。
+- 实际实现：`Config.overrideFfmpegCommand` 对 H.264 stitcher 注入 `-g 1`（且保留 `setVideoImageFormat('jpeg')`）。
+- 原因：Remotion 4.x 不再导出 `setKeyframeInterval`。
+- PRD 是否同步更新：是（5f075b4）
+
+（其余条目开发中由 agent 追加）
