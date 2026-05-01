@@ -7,9 +7,9 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T6.4`
-- **last_updated**: `2026-05-01T18:30:00Z`
-- **next_action**: `开始 T6.4 — ffmpeg concat`
-- **completed**: `27 / 35`
+- **last_updated**: `2026-05-01T20:50:00Z`
+- **next_action**: `开始 T6.5 — loudnorm two-pass`
+- **completed**: `28 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -56,7 +56,7 @@
 | T6.1 | Root.tsx 生成器（render 模式） | done | 2026-05-01T11:43:07Z | 2026-05-01T11:45:12Z | 9a7395e | `calculateMetadata` 需 `block.timing`；缺少则生成器抛错 |
 | T6.2 | timing 计算 | done | 2026-05-01T14:00:00Z | 2026-05-01T14:35:00Z | 8b7899b | `computeBlockTiming` / `applyTimingsToBlocks`；帧数与 `VideoComposition` fallback 对齐 |
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | done | 2026-05-01T16:00:00Z | 2026-05-01T18:25:00Z | b3191ea | 集成测 `RUN_RENDER_PARTIAL_INTEGRATION=1` |
-| T6.4 | ffmpeg concat | pending | — | — | — | — |
+| T6.4 | ffmpeg concat | done | 2026-05-01T20:15:00Z | 2026-05-01T20:50:00Z | ca08086 | `validatePartials` 含音轨布局；`partial` 须在 `output/` 下供 concat 列表 |
 | T6.5 | loudnorm two-pass | pending | — | — | — | — |
 | T6.6 | 质量校验 | pending | — | — | — | — |
 | T6.7 | render 命令组装 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T6.4 — ffmpeg concat @ ca08086
+- acceptance: 2 块 partial → `concat.txt` + `final.mp4`，ffmpeg 回放无 PTS/monotonic DTS 类告警 → ✓（单测 ffmpeg fixture + 集成：`RUN_RENDER_PARTIAL_INTEGRATION=1`）；`npm run build` + `npm run test` → ✓
+- artifacts: `src/render/concat.ts` / `tests/concat.test.ts` / `tests/render-blocks.integration.test.ts`
+- 备注：`concat.txt` 使用相对 `output/` 的路径；不匹配时提示 `cache clean --type partial`
 
 ### T6.3 — partial 渲染（程序化 bundle + renderMedia） @ b3191ea
 - acceptance: 两块 partial + `ffprobe` 首包 flags 含 `K`（IDR 语义）→ ✓；第二次运行 `renderMedia` 调用 0 次、`cacheHit` 路径 → ✓；`npm run build` + `npm run test` → ✓（集成：`RUN_RENDER_PARTIAL_INTEGRATION=1`）
@@ -247,6 +252,12 @@
 - 选择方案：`DEFAULT_SCRIPT_PUBLIC_PATH = "public/script.json"`；Studio fixture 显式 `scriptPublicPath="script.json"`（其 base 与仓库 `public/` 一致）。
 - 备选方案：改写 `fetchScriptJson` 自动加 `public/` — 行为因入口而异，难测。
 - 影响范围：`VideoComposition` 默认 prop、Studio demo。
+
+### 2026-05-01 20:48 | T6.4
+- 模糊点：TASKS 写「抽样」校验；ffprobe JSON 已覆盖首段流元数据，未逐帧扫 GOP。
+- 选择方案：每文件一次 `ffprobe -show_entries stream=... -of json`，比对视频 codec/分辨率/pix_fmt/avg_frame_rate/SAR/profile/level 与音频 codec/sample_rate/channels/layout；与 PRD §10「codec/分辨率/fps/像素格式/SAR」一致，并排除「一轨有音一轨无音」的 concat 坑。
+- 备选方案：`select_streams v:0` 抽几秒 packet — token 更重，且不提升 profile/level 一致性保证。
+- 影响范围：`src/render/concat.ts`。
 
 ### 2026-05-01 18:36 | T6.3
 - 模糊点：TASKS 写「ffprobe 首帧 `key_frame=1`」；部分 ffprobe 版本在 `-show_frames` 首行输出非纯数字。
