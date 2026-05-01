@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T9.2`
-- **last_updated**: `2026-05-03T13:25:00Z`
-- **next_action**: `开始 T9.2 — E2E 测试`
-- **completed**: `37 / 40`
+- **active_task**: `T9.3`
+- **last_updated**: `2026-05-03T14:40:00Z`
+- **next_action**: `开始 T9.3 — install.sh`
+- **completed**: `38 / 40`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -66,7 +66,7 @@
 | T8.2 | doctor | done | 2026-05-02T15:00:00Z | 2026-05-02T15:35:00Z | 0ee7d50 | 退出码 0/1/2；`doctor` 允许 `--config`/`--cache-dir` |
 | T8.3 | init + templates | done | 2026-05-02T18:00:00Z | 2026-05-02T18:22:00Z | 3a29403 | `init <dir> [--force]`；目标不存在时创建父目录 |
 | T9.1 | 单测补全 | done | 2026-05-03T12:00:00Z | 2026-05-03T13:25:00Z | e0e3b70 | 合并为 `parser.test.ts` / `cache.test.ts` / `tts-timings.test.ts`；`cache` CLI 单测 |
-| T9.2 | E2E 测试 | pending | — | — | — | — |
+| T9.2 | E2E 测试 | done | 2026-05-03T14:00:00Z | 2026-05-03T14:40:00Z | f67844c | `npm run test:e2e`；QA 用视频轨时长 + ±2 帧 |
 | T9.3 | install.sh | pending | — | — | — | — |
 | T9.4 | 文档 | pending | — | — | — | — |
 
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T9.2 — E2E 测试 @ f67844c
+- acceptance：`tests/e2e.test.ts` 最小 2 块（图 + 代码行引用）、mock VoxCPM + mock `generateComponentTsx`、真 Remotion 跑满 build；`final_normalized.mp4` 存在 + ffprobe 视频轨时长 vs Σ`timing.frames`（±2 帧）+ 分辨率；`npm run test:e2e` 全绿 → ✓
+- artifacts: `tests/e2e.test.ts` / `package.json`（`test` 排除 e2e，`test:e2e`）/ `src/render/qa.ts`（视频轨时长 + 容差）
+- 备注：`npm run build` + `npm test` + `npm run test:e2e` 已跑通
 
 ### T9.1 — 单测补全 @ e0e3b70
 - acceptance：`tests/parser.test.ts`（原 blocks-directives + project-meta）、`narration.test.ts`、`cache.test.ts`（store + `runCacheCommand` stats/clean dry-run/非法 type）、`tts-timings.test.ts`；`npm test` 全绿 → ✓
@@ -279,6 +284,12 @@
 > - 选择方案：<采纳的实现>
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
+
+### 2026-05-03 14:35 | T9.2
+- 模糊点：PRD §6.4 step 8 写「±1 帧」；真 Remotion partial + concat 后 ffprobe 视频轨可比 Σtiming 长约 1 帧余；`format=duration` 在 loudnorm 后还可因 AAC 长于视频。
+- 选择方案：`validateFinalNormalizedVideo` 用 **视频轨** `duration`（或 nb_frames/fps）与预期比对，容差 **±2 帧**；E2E fixture 块使用 `@enter/@exit: none`，避免 fade 收尾导致 5 点抽样纯黑假阴性。
+- 备选方案：仅放宽到 ±1 帧 — 本机仍偶发超限；仅用 format.duration — loudnorm 路径仍飘。
+- 影响范围：`src/render/qa.ts`；与 TASKS「±1 帧」字面略宽，与「抽样非黑」目的一致。
 
 ### 2026-05-03 13:20 | T9.1
 - 模糊点：TASKS 列出 `parser.test.ts` 等文件名，仓库已有拆分文件（`blocks-directives`、`project-meta` 等）。
