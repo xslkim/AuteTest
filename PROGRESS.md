@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T4.3`
-- **last_updated**: `2026-05-01T20:20:00Z`
-- **next_action**: `实现并验收 src/ai/sandbox.ts（runIsolated）`
-- **completed**: `17 / 35`
+- **active_task**: `T4.4`
+- **last_updated**: `2026-05-01T21:05:00Z`
+- **next_action**: `开始 T4.4 — 验证（tsc + render smoke）`
+- **completed**: `18 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -46,7 +46,7 @@
 | T3.5 | tts 命令组装 | done | 2026-05-01T15:30:00Z | 2026-05-01T16:05:00Z | f05ac08 | 入口用宽松 schema + `voiceRef` 存在性 |
 | T4.1 | prompt + 组件骨架 | done | 2026-05-01T17:30:00Z | 2026-05-01T17:55:00Z | 59bb212 | `prompt-version.ts` 与 cache CLI 共用 MD5 前缀 |
 | T4.2 | Claude SDK 调用 + prompt cache | done | 2026-05-01T18:15:00Z | 2026-05-01T19:05:00Z | 2d258b0 | `beta.messages` + `prompt-caching-2024-07-31`；集成测需 `ANTHROPIC_API_KEY` |
-| T4.3 | 子进程隔离工具 | in_progress | 2026-05-01T20:20:00Z | — | — | — |
+| T4.3 | 子进程隔离工具 | done | 2026-05-01T20:20:00Z | 2026-05-01T21:05:00Z | c1c87ef | `memLimitBytes`/`cpuLimitSec` 可覆盖；默认 8GiB / 600s |
 | T4.4 | 验证（tsc + render smoke） | pending | — | — | — | — |
 | T4.5 | visuals 命令组装 | pending | — | — | — | — |
 | T5.1 | theme + 字体加载 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T4.3 — 子进程隔离工具 @ c1c87ef
+- acceptance: 父进程设 `ANTHROPIC_API_KEY` 时子进程 `printenv` 为空 → ✓；`sleep 60` + 短 `timeoutMs` 非零退出 → ✓；`isolateNetwork` + `curl example.com` 失败 → ✓（无 `curl` 时 vitest skip）；`npm run test` + `npm run build` → ✓
+- artifacts: `src/ai/sandbox.ts` / `tests/sandbox.test.ts`
+- 备注：`prlimit` 包裹；可选 `unshare -n`；`AbortSignal` 触发同样 SIGTERM→5s→SIGKILL
 
 ### T4.2 — Claude SDK 调用 + prompt cache @ 2d258b0
 - acceptance: 单测 mock：`system`/`tools` 含 `cache_control: ephemeral`、`render_component` + `tool_choice` → ✓；`cache_read_input_tokens > 0` → `cacheHit` → ✓；可选集成：`ANTHROPIC_API_KEY` 时 `component-gen.integration` 非跳过 → 本 CI 无 key 为 skip；`npm run test` + `npm run build` → ✓
@@ -245,6 +250,12 @@
 - 选择方案：`CleanCacheOptions` 中各条件按 AND 收敛；仅当 `type`/`olderThanMs`/`stale` 全部满足（已指定的项）时删除。
 - 备选方案：OR — 易删掉仍应保留的条目。
 - 影响范围：`CacheStore.clean`；T2.2 CLI 应保持一致。
+
+### 2026-05-01 21:00 | T4.3
+- 模糊点：TASKS T4.3 写 `prlimit --as=<mem> --cpu=<sec>` 未给出默认数值。
+- 选择方案：`memLimitBytes` 默认 8GiB、`cpuLimitSec` 默认 600，二者均可通过 `RunIsolatedOptions` 覆盖。
+- 备选方案：不设默认迫使调用方每次传入 — 过早对接 T4.4/T4.5 时噪声大。
+- 影响范围：仅 `runIsolated`；最终 render 子进程可在调用处放宽上限。
 
 ### 2026-05-01 19:10 | T4.2
 - 模糊点：TASKS 固定「system prompt 标 ephemeral」；PRD §9 另有 `anthropic.promptCaching` 开关。
