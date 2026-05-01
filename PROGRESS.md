@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:45:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin CLI stub / .gitignore，验收后 chore(done)`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T13:35:00Z`
+- **next_action**: `开始 T0.2 — 类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:45:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:45:00Z | 2026-05-01T13:35:00Z | `3a45310` | Remotion 4：`Config` 来自 `@remotion/cli/config`；GOP 通过 `overrideFfmpegCommand` 注入 `-g 1` |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ `3a45310`
+- acceptance: `npm install` 成功 → ✓（环境中 apt 安装 Node 18；`engines` 要求 Node ≥20，与 CI 一致） | `npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓ | `compile foo.json` 退出码 1 且含 `not implemented` → ✓
+- artifacts: `package.json` / `package-lock.json` / `tsconfig.json` / `remotion.config.ts` / `.gitignore` / `bin/autovideo.ts`
+- 备注：`cache` 子命令按 PRD 要求必填 `<stats|clean>`；PRD §6.4 / §13.1 已同步 Remotion 4 API。
 
 ---
 
@@ -97,7 +100,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 13:35 | T0.1
+- 模糊点：`TASKS.md` T0.1 写「注册 8 个子命令」，但列举含 `build` / `compile` / `tts` / `visuals` / `render` / `preview` / `cache` / `doctor` / `init` 共 9 项。
+- 选择方案：按 `PRD.md` §7 全部注册 9 个子命令。
+- 备选方案：删减某一命令 → 与 PRD CLI 矛盾。
+- 影响范围：仅 CLI stub。
 
 ---
 
@@ -131,4 +138,8 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | §6.4 / remotion.config | GOP / IDR 配置 API
+- PRD 原描述：`Config.setKeyframeInterval(1)`。
+- 实际实现：`Config.overrideFfmpegCommand` 在 stitcher 阶段为 `libx264` 插入 `-g 1 -keyint_min 1 -sc_threshold 0`；`Config.setVideoImageFormat('jpeg')` 来自 `@remotion/cli/config`。
+- 原因：Remotion 4 已从 `remotion` 包移除 `Config.setKeyframeInterval`，类型为 `{}`。
+- PRD 是否同步更新：是（`38b5fc0`）
