@@ -6,9 +6,9 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.3`
-- **last_updated**: `2026-05-01T14:43:30Z`
-- **next_action**: `开始 T1.1 — 项目文件 + meta 解析`
+- **active_task**: `T1.1`
+- **last_updated**: `2026-05-01T16:00:00Z`
+- **next_action**: `实现 project.ts / meta.ts + 单测验收`
 - **completed**: `3 / 35`
 - **blockers**: `0`
 
@@ -32,7 +32,7 @@
 | T0.1 | 仓库骨架 | done | 2026-05-01T09:26:26Z | 2026-05-01T09:28:36Z | aa66616 | — |
 | T0.2 | 类型定义 + Schema | done | 2026-05-01T12:00:00Z | 2026-05-01T12:45:00Z | f6fc71d | — |
 | T0.3 | 配置 loader | done | 2026-05-01T14:10:00Z | 2026-05-01T14:43:30Z | f96724c | — |
-| T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
+| T1.1 | 项目文件 + meta 解析 | in_progress | 2026-05-01T16:00:00Z | — | — | — |
 | T1.2 | 块解析 + directive | pending | — | — | — | — |
 | T1.3 | 旁白预处理 | pending | — | — | — | — |
 | T1.4 | 资产 hash 复制 | pending | — | — | — | — |
