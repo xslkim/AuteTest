@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T5.3`
-- **last_updated**: `2026-05-01T12:08:00Z`
-- **next_action**: `开始 T5.3 — BlockFrame + animations`
-- **completed**: `22 / 35`
+- **active_task**: `T5.4`
+- **last_updated**: `2026-05-01T14:45:00Z`
+- **next_action**: `开始 T5.4 — BlockComposition（render 用）`
+- **completed**: `23 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -51,7 +51,7 @@
 | T4.5 | visuals 命令组装 | done | 2026-05-02T12:00:00Z | 2026-05-02T12:45:00Z | 7eb5c3f | `CompiledBlock` 允许可选 `audio` + `visual.componentPath`；生成顺序执行以满足「失败不启下一块」验收 |
 | T5.1 | theme + 字体加载 | done | 2026-05-01T11:19:15Z | 2026-05-01T11:22:09Z | 84723da | `getTheme`；Noto Sans SC + Noto Color Emoji + JetBrains Mono |
 | T5.2 | SubtitleOverlay | done | 2026-05-01T12:00:00Z | 2026-05-01T12:08:00Z | c3425f5 | `npx remotion studio remotion/studio-subtitle-overlay.tsx` Composition `SubtitleOverlayDemo` |
-| T5.3 | BlockFrame + animations | pending | — | — | — | — |
+| T5.3 | BlockFrame + animations | done | 2026-05-01T14:00:00Z | 2026-05-01T14:45:00Z | cd4dfd5 | Studio `BlockFrameFadeUpDemo` |
 | T5.4 | BlockComposition（render 用） | pending | — | — | — | — |
 | T6.1 | Root.tsx 生成器（render 模式） | pending | — | — | — | — |
 | T6.2 | timing 计算 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T5.3 — BlockFrame + animations @ cd4dfd5
+- acceptance: Remotion Studio：`fade-up` 块进入自下方滑入 + 渐显 → ✓（`BlockFrameFadeUpDemo`，`npx remotion compositions remotion/studio-block-frame.tsx`）；`npm run build` → ✓；`npm run test` → ✓
+- artifacts: `remotion/engine/animations.ts` / `remotion/engine/block-frame.tsx` / `remotion/studio-block-frame.tsx` / `tests/animations.test.ts`
+- 备注：`exit` 段对同一 preset 使用 `exitFn(1 - localT)`，与入场运动对称；`studio-block-frame.tsx` 中 `subtitleSafeBottom = floor(height*0.15)` 与 §6.1 一致
 
 ### T5.2 — SubtitleOverlay @ c3425f5
 - acceptance: Studio 单独 Composition 字幕按时序切换 + 高亮 → ✓（`SubtitleOverlayDemo`）；`npm run build` → ✓；`npm run test` → ✓
@@ -294,6 +299,12 @@
 - 选择方案：`fonts.mono` 使用 `JetBrains Mono`（`@remotion/google-fonts/JetBrainsMono`），与代码教学场景一致；`loadFont` 仅拉 latin/latin-ext/cyrillic 子集与 400 字重。
 - 备选方案：`fonts.mono` 仍用 `monospace` 通用族 — 与 CJK 混排时跨机 fallback 不一致。
 - 影响范围：仅 `remotion/engine/theme.ts`；后续主题可另定 mono。
+
+### 2026-05-01 14:40 | T5.3
+- 模糊点：PRD TASKS 只写「末段 exit 动画」，未写 `exit` 与 `enter` 同一 preset 时是「同向再播」还是「反向收束」。
+- 选择方案：exit 段用 `exitFn(1 - localProgress)`，使 `t=0` 为完全可见、`t=1` 回到动画起点样式，与入场互补对称（fade-up 出场 = 下移 + 淡出）。
+- 备选方案：exit 也用 `exitFn(localProgress)` 与 enter 同向 — 常见「飞出」效果但与 enter 不对称。
+- 影响范围：仅 `remotion/engine/block-frame.tsx`；partial 缓存键只依赖预设名，不依赖具体插值细节。
 
 ### 2026-05-01 12:05 | T5.2
 - 模糊点：T5.1 在 `NotoSansSC` / `NotoColorEmoji` 上传的 `subsets` 名（`chinese-simplified`、`emoji`）与 `@remotion/google-fonts` 4.x 元数据中实际键（`[4]`… 分片）不一致，Webpack 评测期 `loadFont` 抛错。
