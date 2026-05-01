@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T3.4`
-- **last_updated**: `2026-05-01T10:38:00Z`
-- **next_action**: `开始 T3.4 — lineTimings 计算`
+- **last_updated**: `2026-05-01T14:05:00Z`
+- **next_action**: `实现 src/tts/timings.ts + tests/timings.test.ts，跑 test/build`
 - **completed**: `13 / 35`
 - **blockers**: `0`
 
@@ -42,7 +42,7 @@
 | T3.1 | VoxCPM FastAPI wrapper | done | 2026-05-02T12:00:00Z | 2026-05-02T12:50:00Z | 769b75b | — |
 | T3.2 | voxcpm-client + autoStart | done | 2026-05-01T10:30:43Z | 2026-05-01T10:32:48Z | 3ac0baa | 集成测 `RUN_VOXCPM_INTEGRATION=1` |
 | T3.3 | ffmpeg helpers | done | 2026-05-01T10:35:00Z | 2026-05-01T10:37:00Z | 0fcbb40 | `anullsrc` fixture；concat 用临时 concat demuxer |
-| T3.4 | lineTimings 计算 | pending | — | — | — | — |
+| T3.4 | lineTimings 计算 | in_progress | 2026-05-01T14:05:00Z | — | — | — |
 | T3.5 | tts 命令组装 | pending | — | — | — | — |
 | T4.1 | prompt + 组件骨架 | pending | — | — | — | — |
 | T4.2 | Claude SDK 调用 + prompt cache | pending | — | — | — | — |
