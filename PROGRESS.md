@@ -18,7 +18,7 @@
 2. [x] 已读 `TASKS.md` 全文
 3. [x] 已读本文件，确认 `active_task` 与 `next_action`
 4. [x] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（尚无 done 任务）
+5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的收尾提交一致（T0.1 实现见 `f822060`，PRD/进度收尾见当前 `HEAD`）
 
 ---
 
@@ -138,4 +138,4 @@
 - PRD 原描述：`remotion.config.ts` 中 `Config.setKeyframeInterval(1)`
 - 实际实现：`Config.overrideFfmpegCommand` 在 stitcher 为 `libx264` 追加 `-g 1 -keyint_min 1`
 - 原因：当前 `@remotion/cli` 4.x 的 `Config` 类型中已无 `setKeyframeInterval`；需用 FFmpeg x264 GOP 参数达到「每帧 IDR」以支持 `-c copy` concat
-- PRD 是否同步更新：是（见本任务 PRD 修订 commit）
+- PRD 是否同步更新：是（commit `aaecdd9`）
