@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T3.3`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `实现并验收 src/tts/audio.ts（appendSilence / concatWavs / wavDurationSec）`
-- **completed**: `12 / 35`
+- **active_task**: `T3.4`
+- **last_updated**: `2026-05-01T10:38:00Z`
+- **next_action**: `开始 T3.4 — lineTimings 计算`
+- **completed**: `13 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -41,7 +41,7 @@
 | T2.2 | cache CLI | done | 2026-05-02T00:15:00Z | 2026-05-02T10:25:00Z | 0aa039a | `clean --dry-run`；子命令 `allowUnknownOption` 以兼容 `--cache-dir` 位置 |
 | T3.1 | VoxCPM FastAPI wrapper | done | 2026-05-02T12:00:00Z | 2026-05-02T12:50:00Z | 769b75b | — |
 | T3.2 | voxcpm-client + autoStart | done | 2026-05-01T10:30:43Z | 2026-05-01T10:32:48Z | 3ac0baa | 集成测 `RUN_VOXCPM_INTEGRATION=1` |
-| T3.3 | ffmpeg helpers | in_progress | 2026-05-01T12:00:00Z | — | — | — |
+| T3.3 | ffmpeg helpers | done | 2026-05-01T10:35:00Z | 2026-05-01T10:37:00Z | 0fcbb40 | `anullsrc` fixture；concat 用临时 concat demuxer |
 | T3.4 | lineTimings 计算 | pending | — | — | — | — |
 | T3.5 | tts 命令组装 | pending | — | — | — | — |
 | T4.1 | prompt + 组件骨架 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T3.3 — ffmpeg helpers @ 0fcbb40
+- acceptance: `appendSilence` + `wavDurationSec`：1s + 200ms → 1.2s ±1ms → ✓；`concatWavs` + 时长、空参/缺文件报错 → ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/tts/audio.ts` / `tests/audio.test.ts`
+- 备注：`appendSilence` 经 `apad=pad_dur`；多段 `concatWavs` 写临时目录 + `ffmpeg -f concat -c copy`
 
 ### T3.2 — voxcpm-client + autoStart @ 3ac0baa
 - acceptance: mock fetch：`registerVoice` → `speak` 流程 → ✓；`parseVoxcpmEndpoint` 单测 → ✓；集成：`RUN_VOXCPM_INTEGRATION=1` 时 autoStart 拉起并 `/health` → ✓（默认跳过；CI 无 Python 依赖）
