@@ -6,19 +6,17 @@ import { loadFont as loadNotoColorEmoji } from "@remotion/google-fonts/NotoColor
 /** 主题所需子集与字重尽量收窄，避免默认加载整包触发过量网络请求。 */
 loadFont("normal", {
   weights: ["400", "600"],
-  subsets: ["latin", "latin-ext", "chinese-simplified"],
+  /** 不向 google-fonts 传 `subsets`：NotoSansSC 的简体中文在元数据中为分片键 `[4]`…，而非 `chinese-simplified`。 */
   ignoreTooManyRequestsWarning: true,
 });
 
 loadJetBrainsMono("normal", {
   weights: ["400"],
-  subsets: ["latin", "latin-ext", "cyrillic"],
   ignoreTooManyRequestsWarning: true,
 });
 
 loadNotoColorEmoji("normal", {
   weights: ["400"],
-  subsets: ["emoji"],
   ignoreTooManyRequestsWarning: true,
 });
 

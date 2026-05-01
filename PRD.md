@@ -311,6 +311,8 @@ interface SubtitleOverlayProps {
   audioStartFrame: number;    // = enterFrames；字幕显示窗口从此帧起算（入场期间不显示）
   frame: number;              // 块内帧
   fps: number;
+  width: number;               // 视频宽（px）；用于 maxWidthPct 等布局
+  height: number;             // 视频高（px）；用于 fontSizePct 等字号
   theme: Theme;
 }
 
@@ -559,7 +561,9 @@ Content-Type: application/json
        lines={block.narration.lines}
        lineTimings={block.audio.lineTimings}
        audioStartFrame={enterFrames}              // 入场期间不显示字幕；与 frame 同单位（帧）
-       frame={frame} fps={fps} />
+       frame={frame} fps={fps}
+       width={width} height={height}
+       theme={theme} />
      <Sequence from={enterFrames}>
        <Audio src={staticFile(`audio/${block.id}.wav`)} />
      </Sequence>
@@ -596,7 +600,7 @@ Content-Type: application/json
    ```
    `-c copy` 是流复制，无重编码，秒级完成。要求所有 partial 的编码参数（codec、分辨率、fps、像素格式、SAR、profile/level）严格一致——Remotion 已统一这些参数，但 stage 启动前用 `ffprobe` 抽样校验，不一致则报错（防止编码漂移）。
    - **PTS 处理**：`-fflags +genpts` + `-avoid_negative_ts make_zero` 重建 / 归零跨文件 PTS，避免 H.264 + AAC concat 在边界出现 PTS 不连续导致播放器卡顿或 A/V 失同步
-   - **GOP 起点对齐 IDR**：每个 partial 必须以 IDR 关键帧开头才能被流复制 concat。`remotion.config.ts` 中显式 `setKeyframeInterval(1)`（或等价配置）保证 Remotion 输出的每段 mp4 首帧都是 IDR；否则少数情况会出现首帧绿屏 / 丢帧
+   - **GOP 起点对齐 IDR**：每个 partial 必须以 IDR 关键帧开头才能被流复制 concat。Remotion 4 起 `Config.setKeyframeInterval` 已移除；项目在 `remotion.config.ts` 用 `Config.overrideFfmpegCommand` 在 stitcher 阶段对 `libx264` 追加 `-g 1 -keyint_min 1`，保证每帧 IDR；否则少数情况会出现首帧绿屏 / 丢帧
 
 7. **响度标准化**：ffmpeg `loudnorm` two-pass（默认 `I=-16 TP=-1.5 LRA=11`，参数从 `render.loudnorm` 读取）→ `output/final_normalized.mp4`
    - 第 1 遍 `-af loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json -f null -` 解析 stderr 中的 JSON（measured_I / measured_TP / measured_LRA / measured_thresh / target_offset）
