@@ -73,7 +73,7 @@ const KNOWN_SUBCOMMANDS = new Set([
   "init",
 ]);
 
-function projectJsonPathFromArgv(argv: readonly string[]): string {
+export function projectJsonPathFromArgv(argv: readonly string[]): string {
   const args = argv.slice(2).filter((x) => {
     if (x.startsWith("-")) return false;
     if (KNOWN_SUBCOMMANDS.has(x)) return false;
@@ -186,6 +186,28 @@ export function resolveCompileBuildOutDir(
     return resolvePath(cwd, outFlag);
   }
   return resolvePath(cwd, "build", slug);
+}
+
+/**
+ * 解析 `build` / `compile` 共用的 `--out` 与 project.json，得到即将写入的构建根目录。
+ */
+export function resolveBuildOutDirFromProjectArgv(input: {
+  argv: readonly string[];
+  cwd: string;
+  metaOverrides?: Partial<Record<MetaCliKey, MetaOverrideValue>>;
+}): { buildOutDirAbs: string; projectJsonAbs: string } {
+  const { argv, cwd, metaOverrides } = input;
+  const { outFlag } = extractExtraFlags(argv);
+  const relProject = projectJsonPathFromArgv(argv);
+  const projectJsonAbs = resolvePath(cwd, relProject);
+  const project = loadProjectFile(projectJsonAbs, cwd);
+  const meta = parseMetaFile({
+    metaMdPath: project.metaPathAbs,
+    projectRootDir: project.projectRootDir,
+    metaOverrides,
+  });
+  const buildOutDirAbs = resolveCompileBuildOutDir(cwd, meta, outFlag);
+  return { buildOutDirAbs, projectJsonAbs };
 }
 
 function writeCompiledScript(script: CompiledScript, buildOutDirAbs: string): void {
