@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T8.1`
-- **last_updated**: `2026-05-02T14:30:00Z`
-- **next_action**: `开始 T8.1 — build orchestrator`
-- **completed**: `33 / 35`
+- **active_task**: `T8.2`
+- **last_updated**: `2026-05-02T13:11:00Z`
+- **next_action**: `开始 T8.2 — doctor`
+- **completed**: `34 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -62,7 +62,7 @@
 | T6.7 | render 命令组装 | done | 2026-05-01T23:50:00Z | 2026-05-01T23:58:00Z | 7e33deb | `renderInputSchema` 允许块上可选 `timing`/`render` 以便已完成一轮的 script.json 再次 `render` |
 | T7.1 | Root.tsx 生成器（preview 模式） | done | 2026-05-02T12:10:00Z | 2026-05-02T12:42:00Z | 17353aa | per-block Composition；无有效 lineTimings 时均匀占位字幕 |
 | T7.2 | preview 命令 | done | 2026-05-02T14:00:00Z | 2026-05-02T14:30:00Z | f47458a | `remotion-root-preview.tsx`；`AUTVIDEO_REMOTION_ENTRY`；`--block` 默认 `--port=3333` + `xdg-open` |
-| T8.1 | build orchestrator | pending | — | — | — | — |
+| T8.1 | build orchestrator | done | 2026-05-02T13:02:00Z | 2026-05-02T13:11:00Z | 8a2ce5d | 子 stage 用 `cwd=build-out`、`script.json` 相对路径；不经 `process.chdir`（Vitest worker 限制） |
 | T8.2 | doctor | pending | — | — | — | — |
 | T8.3 | init + templates | pending | — | — | — | — |
 | T9.1 | 单测补全 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T8.1 — build orchestrator @ 8a2ce5d
+- acceptance：`--block` 报错并提示分步命令 → ✓；顺序 compile → tts → visuals → render、阶段失败抛出 → ✓；子 stage `cwd`=build-out（等同 §10）；mock E2E 产出 `final_normalized.mp4` → ✓；`npm run build` + `npm run test` → ✓
+- artifacts: `src/cli/build.ts` / `src/cli/compile.ts`（`resolveBuildOutDirFromProjectArgv`、`projectJsonPathFromArgv`）/ `bin/autovideo.ts` / `tests/build-cli.test.ts`
+- 备注：`--dry-run` 仅 compile dry-run；`--config`/`--cache-dir` 在子 stage argv 内改为绝对路径，避免 cwd 切换到 build-out 后丢配置
 
 ### T7.2 — preview 命令 @ f47458a
 - acceptance: 生成 `remotion-root-preview.tsx` + Studio spawn；`--block` 定位 → ✓（默认 `--port=3333` 并 `xdg-open /{blockId}`；可用 `AUTVIDEO_PREVIEW_OPEN=0` 禁用）；`npm run build` + `npm run test` → ✓
@@ -259,6 +264,12 @@
 > - 选择方案：<采纳的实现>
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
+
+### 2026-05-02 13:10 | T8.1
+- 模糊点：PRD §10 写各 stage 进程的 cwd 统一到 build out。
+- 选择方案：`compile` 仍用用户项目根 cwd；`tts`/`visuals`/`render` 均传 `cwd: buildOutDirAbs` 且首参为相对路径 `script.json`；在 `chdir` 到构建目录下语义等价。Vitest thread pool 不支持 `process.chdir`，故 build 实现不调用全局 chdir。
+- 备选方案：build 测试单独 fork 进程 — 更重。
+- 影响范围：`runBuildCommand` 与 `tests/build-cli.test.ts`。
 
 ### 2026-05-02 14:28 | T7.2
 - 模糊点：TASKS 写 `--block` 经 query string 或默认 Composition；Remotion Studio 路由为 pathname 末段（如 `/B03`）。

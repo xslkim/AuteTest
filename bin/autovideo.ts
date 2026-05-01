@@ -7,6 +7,7 @@ import { runTtsCommand } from "../src/cli/tts.js";
 import { runVisualsCommand } from "../src/cli/visuals.js";
 import { runRenderCommand } from "../src/cli/render.js";
 import { runPreviewCommand } from "../src/cli/preview.js";
+import { runBuildCommand } from "../src/cli/build.js";
 
 const notImplemented = (): never => {
   console.error("not implemented");
@@ -25,8 +26,15 @@ async function main(): Promise<void> {
     .command("build <projectJson>")
     .description("Run compile → tts → visuals → render")
     .allowUnknownOption(true)
-    .action(() => {
-      notImplemented();
+    .allowExcessArguments(true)
+    .action(async () => {
+      try {
+        await runBuildCommand({ argv: process.argv, cwd: process.cwd() });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error(msg);
+        process.exit(1);
+      }
     });
 
   program
