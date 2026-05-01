@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T8.2`
-- **last_updated**: `2026-05-02T13:11:00Z`
-- **next_action**: `开始 T8.2 — doctor`
+- **last_updated**: `2026-05-02T15:00:00Z`
+- **next_action**: `实现 §7 doctor 11 项检查 + 单测`
 - **completed**: `34 / 35`
 - **blockers**: `0`
 
@@ -63,7 +63,7 @@
 | T7.1 | Root.tsx 生成器（preview 模式） | done | 2026-05-02T12:10:00Z | 2026-05-02T12:42:00Z | 17353aa | per-block Composition；无有效 lineTimings 时均匀占位字幕 |
 | T7.2 | preview 命令 | done | 2026-05-02T14:00:00Z | 2026-05-02T14:30:00Z | f47458a | `remotion-root-preview.tsx`；`AUTVIDEO_REMOTION_ENTRY`；`--block` 默认 `--port=3333` + `xdg-open` |
 | T8.1 | build orchestrator | done | 2026-05-02T13:02:00Z | 2026-05-02T13:11:00Z | 8a2ce5d | 子 stage 用 `cwd=build-out`、`script.json` 相对路径；不经 `process.chdir`（Vitest worker 限制） |
-| T8.2 | doctor | pending | — | — | — | — |
+| T8.2 | doctor | in_progress | 2026-05-02T15:00:00Z | — | — | — |
 | T8.3 | init + templates | pending | — | — | — | — |
 | T9.1 | 单测补全 | pending | — | — | — | — |
 | T9.2 | E2E 测试 | pending | — | — | — | — |
