@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:05:00Z`
-- **next_action**: `实现 package.json/tsconfig/remotion CLI stub 并完成验收`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:45:00Z`
+- **next_action**: `开始类型定义与 JSON Schema（T0.2）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -18,7 +18,7 @@
 2. [x] 已读 `TASKS.md` 全文
 3. [x] 已读本文件，确认 `active_task` 与 `next_action`
 4. [x] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（尚无 done 任务）
+5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（完成 T0.1 后应与 T0.1 行 Commit 对齐）
 
 ---
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:05:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T12:45:00Z | 03efb806ae5a16de86f488009760536035c0d3b8 | GOP：libx264 `-g 1` via remotion.config |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ 8a18dad
+- acceptance: `npm install` ✓；`npx tsx bin/autovideo.ts --help` 列出 build/compile/tts/visuals/render/preview/cache/doctor/init ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 "not implemented" ✓；`npx tsc --noEmit` ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`；PRD §6.4 + TASKS T0.1 已按 Remotion v4 修订
+- 备注：容器内无预装 Node 时通过 NodeSource 安装 Node 20 以跑验收
 
 ---
 
@@ -97,7 +100,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 | T0.1
+- 模糊点：PRD §6.4 / TASKS T0.1 要求 `Config.setKeyframeInterval(1)`；安装的 `@remotion/cli` 4.0.x `Config` 类型中无此方法
+- 选择方案：对 stitcher 且在 `-c:v libx264` 时通过 `overrideFfmpegCommand` 插入 `-g 1 -keyint_min 1`，并同步修订 PRD §6.4 与 TASKS T0.1 描述
+- 备选方案：保留无效 API 调用导致 `tsc` 失败，或仅用 `setVideoImageFormat` 而不处理 GOP——均不满足 concat 前置条件或可构建性
+- 影响范围：仅 `remotion.config.ts` 与文档；Linux 默认 `libx264`；若将来强制硬件编码需单独评估 GOP
 
 ---
 
