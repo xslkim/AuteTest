@@ -268,7 +268,82 @@ def cursor_api_request(method: str, path: str, body: dict | None = None, timeout
         raise RuntimeError(f"Cursor API {e.code}: {body_text}")
 
 
-def call_cursor_agent(task: TaskState, prompt: str, github_repo_url: str) -> str:
+def git_try_resolve_origin_head_sha() -> str:
+    """
+    本地 git 解析 origin/main（或 master）顶端 SHA。当前 Cursor Cloud API 对 SHA 作为
+    startingRef 的校验不稳定（曾返回 “Branch '<sha>' does not exist”），默认请勿依赖；
+    仅在用户显式需要时配合 CURSOR_GITHUB_REF / --github-ref 使用。
+    """
+    for ref in ("origin/main", "origin/master"):
+        r = subprocess.run(
+            ["git", "rev-parse", ref],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        if r.returncode == 0:
+            sha = r.stdout.strip()
+            if len(sha) >= 7:
+                return sha
+    return ""
+
+
+def compute_cursor_starting_ref_raw(args: argparse.Namespace) -> str:
+    """
+    决定传给 Cursor 的 startingRef 原始字符串（再经 resolve_starting_ref 处理）。
+
+    优先级：命令行 --github-ref > 环境变量 CURSOR_GITHUB_REF > 默认 ``main``。
+
+    GitHub 集成配置正确时，使用 ``main`` 即可；省略 startingRef 曾在服务端报
+    “Failed to determine repository default branch”；自动填 SHA 曾被 API 误拒。
+    """
+    if hasattr(args, "github_ref"):
+        return args.github_ref
+    if "CURSOR_GITHUB_REF" in os.environ:
+        return os.environ["CURSOR_GITHUB_REF"]
+    return "main"
+
+
+def resolve_starting_ref(spec: Optional[str]) -> Optional[str]:
+    """
+    repos[0].startingRef 为可选字段；省略时由 Cursor 使用仓库默认分支。
+    若显式写 main 但 Cursor↔GitHub 集成未授权该仓库，可能报「无法验证分支」。
+    """
+    if spec is None:
+        return None
+    s = spec.strip()
+    if not s:
+        return None
+    if s.lower() in ("omit", "default", "auto"):
+        return None
+    return s
+
+
+def resolve_cursor_model_id(spec: Optional[str]) -> Optional[str]:
+    """
+    Cloud Agents API 不接受 model.id=\"auto\"；文档要求省略 model 字段以使用
+    「用户默认 → 团队默认 → 系统默认」解析链（等同 IDE 里交给 Cursor 选默认）。
+
+    显式模型须为 GET https://api.cursor.com/v1/models 返回的 id（如 composer-2）。
+    """
+    if spec is None:
+        return None
+    s = spec.strip()
+    if not s:
+        return None
+    if s.lower() in ("auto", "default", "omit"):
+        return None
+    return s
+
+
+def call_cursor_agent(
+    task: TaskState,
+    prompt: str,
+    github_repo_url: str,
+    model_id: Optional[str] = None,
+    starting_ref: Optional[str] = None,
+) -> str:
     """
     通过 Cursor Cloud Agents API 创建一个 Agent 并启动首次 Run。
 
@@ -277,23 +352,61 @@ def call_cursor_agent(task: TaskState, prompt: str, github_repo_url: str) -> str
         2. 将仓库推送到 GitHub（public 或已授权 private）
         3. 环境变量 CURSOR_GITHUB_REPO=https://github.com/你/仓库
            或通过 --github-repo 参数传入
+        4. GitHub 集成需能访问该仓库（Integrations → GitHub），否则分支校验会失败
+
+    model_id：None / \"\" / auto / default → 请求体不传 model（官方默认链）；否则传入 {\"model\": {\"id\": ...}}。
+    starting_ref：None / \"\" / omit → 不传 startingRef；否则传入分支名或 commit SHA。
 
     返回 agent_id（用于轮询状态）。
     """
-    data = cursor_api_request("POST", "/v1/agents", body={
+    repo_cfg: dict = {"url": github_repo_url}
+    ref = resolve_starting_ref(starting_ref)
+    if ref:
+        repo_cfg["startingRef"] = ref
+
+    body: dict = {
         "prompt": {"text": prompt},
-        "repos": [{"url": github_repo_url, "startingRef": "main"}],
+        "repos": [repo_cfg],
         "autoCreatePR": False,          # 不自动建 PR，让 agent 直接 push commit
-    })
-    agent_id = data.get("id", "")
+    }
+    explicit = resolve_cursor_model_id(model_id)
+    if explicit:
+        body["model"] = {"id": explicit}
+
+    data = cursor_api_request("POST", "/v1/agents", body=body)
+    agent = data.get("agent") if isinstance(data.get("agent"), dict) else {}
+    agent_id = (agent.get("id") or data.get("id") or "").strip()
     if not agent_id:
         raise RuntimeError(f"Cursor API 未返回 agent id，响应: {data}")
     return agent_id
 
 
 def poll_cursor_agent(agent_id: str) -> dict:
-    """轮询 Cursor Cloud Agent 的状态"""
+    """轮询 Cursor Cloud Agent 的状态（底层 GET agent）"""
     return cursor_api_request("GET", f"/v1/agents/{agent_id}")
+
+
+def poll_cursor_latest_run(agent_id: str) -> tuple[str, dict]:
+    """
+    读取当前 Agent 最近一次 Run 的状态（文档：执行状态在 run 上，不在 agent 根对象）。
+    返回 (status 大写字符串或 unknown, 合并后的调试 dict)。
+    """
+    try:
+        ag = cursor_api_request("GET", f"/v1/agents/{agent_id}")
+    except Exception as e:
+        return ("unknown", {"error": str(e)})
+    agent = ag.get("agent") if isinstance(ag.get("agent"), dict) else ag
+    rid = (agent or {}).get("latestRunId") or ag.get("latestRunId")
+    if not rid:
+        return ("unknown", ag)
+    try:
+        run = cursor_api_request("GET", f"/v1/agents/{agent_id}/runs/{rid}")
+    except Exception as e:
+        return ("unknown", {"agent": ag, "run_error": str(e)})
+    st = run.get("status")
+    if not st and isinstance(run.get("run"), dict):
+        st = run["run"].get("status")
+    return ((st or "unknown").strip(), run)
 
 
 # ─── 4B. 直接 Claude API（工具调用模式）────────────────────────────────────
@@ -533,13 +646,54 @@ def call_claude_agent(
 # 5. 监控任务完成（git log 检测）
 # ════════════════════════════════════════════════════════════════════════════
 
-def check_task_done_in_git(task_id: str) -> bool:
-    """检查 git log 中是否存在 chore(Tx.y): done 的 commit"""
-    result = subprocess.run(
-        ["git", "log", "--oneline", "-50"],
+def refresh_local_from_origin_main() -> None:
+    """云端 Agent 更新 PROGRESS.md 在 GitHub 上，本地需快进合并才能解析下一任务。"""
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+    subprocess.run(
+        ["git", "fetch", "origin", "main"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        timeout=120,
+        env=env,
+    )
+    r = subprocess.run(
+        ["git", "merge", "--ff-only", "origin/main"],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
+        timeout=60,
+        env=env,
+    )
+    if r.returncode != 0:
+        print(
+            c(
+                YELLOW,
+                f"[警告] 未能 ff-only 合并 origin/main（请先提交或处理本地改动）: "
+                f"{(r.stderr or r.stdout or '')[:220]}",
+            )
+        )
+
+
+def check_task_done_in_git(task_id: str) -> bool:
+    """
+    检查是否存在 chore(Tx.y): done 的 commit。
+    云端 Agent 推送到 GitHub 后先 git fetch，并在所有已 fetch 的分支历史上搜索（含 origin/cursor-*）。
+    """
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+    subprocess.run(
+        ["git", "fetch", "origin", "--prune"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        timeout=120,
+        env=env,
+    )
+    result = subprocess.run(
+        ["git", "log", "--oneline", "-250", "--all"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+        env=env,
     )
     pattern = rf"chore\({re.escape(task_id)}\):\s*done"
     return bool(re.search(pattern, result.stdout, re.IGNORECASE))
@@ -562,22 +716,30 @@ def wait_for_cursor_agent_done(
         elapsed = int(time.time() - start)
         print(f"  [{elapsed}s] 检查状态...", end="\r")
 
-        # 优先检查 git（更可靠）
+        # 优先检查 git（云端 push 后需 fetch 才能在本仓库看到）
         if check_task_done_in_git(task.id):
             print(c(GREEN, f"\n✅ 任务 {task.id} 已通过 git 确认完成"))
             return True
 
-        # 检查 Cursor API 状态
+        # Cursor Cloud：执行状态在 Run 对象上（FINISHED / ERROR / …）
         try:
-            status = poll_cursor_agent(agent_id)
-            state = status.get("state", status.get("status", "unknown"))
-            print(f"  [{elapsed}s] Cursor Agent 状态: {state}", end="\r")
-            if state in ("completed", "done", "finished", "success"):
-                # 再等 5s 让 git commit 落盘
-                time.sleep(5)
-                return check_task_done_in_git(task.id)
-            if state in ("failed", "error", "cancelled"):
-                print(c(RED, f"\n❌ Cursor Agent 报告失败: {status}"))
+            run_state, run_payload = poll_cursor_latest_run(agent_id)
+            print(f"  [{elapsed}s] Cursor Run 状态: {run_state}", end="\r")
+            if run_state == "FINISHED":
+                # 等待远端镜像与 GitHub 传播后再确认 chore(): done
+                for _ in range(12):
+                    time.sleep(5)
+                    if check_task_done_in_git(task.id):
+                        print(c(GREEN, f"\n✅ 任务 {task.id} 已通过 git 确认完成"))
+                        return True
+                print(
+                    c(
+                        YELLOW,
+                        "\n  Run 已 FINISHED 但未在 git 历史中找到 chore(...): done，继续轮询…",
+                    )
+                )
+            elif run_state in ("ERROR", "CANCELLED", "EXPIRED"):
+                print(c(RED, f"\n❌ Cursor Run 结束状态: {run_state} — {run_payload}"))
                 return False
         except Exception as e:
             print(c(YELLOW, f"\n  [警告] 轮询 Cursor API 失败: {e}，继续等待..."))
@@ -652,8 +814,8 @@ def main() -> None:
     parser.add_argument(
         "--timeout",
         type=int,
-        default=3600,
-        help="单任务超时秒数（默认 3600=1h）",
+        default=14400,
+        help="单任务超时秒数（默认 14400=4h，云端 Agent 可能较慢）",
     )
     parser.add_argument(
         "--max-turns",
@@ -670,6 +832,25 @@ def main() -> None:
         "--prompt-only",
         action="store_true",
         help="只打印第一个任务的 prompt 然后退出（用于调试 prompt 内容）",
+    )
+    parser.add_argument(
+        "--cursor-model",
+        default=os.environ.get("CURSOR_AGENT_MODEL", ""),
+        metavar="ID",
+        help=(
+            "仅 Cursor 模式：模型 id；留空或 auto/default 表示不传 model 字段（"
+            "使用账户/团队默认，见官方文档）。显式 id 须来自 GET /v1/models。"
+            "也可用环境变量 CURSOR_AGENT_MODEL。"
+        ),
+    )
+    parser.add_argument(
+        "--github-ref",
+        default=argparse.SUPPRESS,
+        metavar="REF",
+        help=(
+            "仅 Cursor：repos[0].startingRef（分支名或 commit SHA）。"
+            "默认 main；omit 表示不传 startingRef。环境变量 CURSOR_GITHUB_REF。"
+        ),
     )
     args = parser.parse_args()
 
@@ -722,7 +903,9 @@ def main() -> None:
     current_start = args.task  # 第一次用 --task 指定
 
     for run_idx in range(total_to_run):
-        # 重新读取 PROGRESS.md（agent 可能已更新它）
+        if mode == "cursor":
+            refresh_local_from_origin_main()
+        # 重新读取 PROGRESS.md（agent 在远端更新后需先 pull 合并）
         tasks = parse_progress()
         task = next_task(tasks, current_start)
         current_start = None  # 后续迭代不再指定起点
@@ -763,13 +946,44 @@ def main() -> None:
                         "Cursor Cloud Agent 需要设置 CURSOR_GITHUB_REPO 环境变量\n"
                         "  例如：export CURSOR_GITHUB_REPO=https://github.com/你/AutoVideo"
                     )
-                agent_id = call_cursor_agent(task, prompt, github_repo)
+                cm = resolve_cursor_model_id((args.cursor_model or "").strip() or None)
+                if cm:
+                    print(c(CYAN, f"Cursor Cloud Agent 模型 id: {cm}"))
+                else:
+                    print(c(CYAN, "Cursor Cloud Agent 模型: 未指定（等同 auto，使用 Cursor 默认模型链）"))
+                raw_ref = compute_cursor_starting_ref_raw(args)
+                sr = resolve_starting_ref((raw_ref or "").strip() or None)
+                if sr:
+                    disp = f"{sr[:14]}…{sr[-6:]}" if len(sr) > 24 else sr
+                    print(c(CYAN, f"GitHub startingRef: {disp}"))
+                else:
+                    print(c(CYAN, "GitHub startingRef: （省略，由 Cursor 解析默认分支）"))
+                agent_id = call_cursor_agent(
+                    task,
+                    prompt,
+                    github_repo,
+                    model_id=args.cursor_model or None,
+                    starting_ref=(raw_ref or "").strip() or None,
+                )
                 print(c(CYAN, f"[Cursor Agent] Agent ID: {agent_id}"))
                 success = wait_for_cursor_agent_done(
                     agent_id, task, args.poll_interval, args.timeout
                 )
             except RuntimeError as e:
+                err_txt = str(e).lower()
                 print(c(RED, f"\n[Cursor API 错误] {e}"))
+                if (
+                    "branch" in err_txt
+                    or "repository" in err_txt
+                    or "default branch" in err_txt
+                ):
+                    print(
+                        c(
+                            YELLOW,
+                            "提示：打开 Cursor Dashboard → Integrations，确认 GitHub 已连接且 Cursor 能访问该仓库；"
+                            "脚本默认已传本地解析的 commit SHA；仍失败多半是集成权限问题。",
+                        )
+                    )
                 print(c(YELLOW, "尝试降级到 Claude API 模式..."))
                 if os.environ.get("ANTHROPIC_API_KEY"):
                     mode = "claude"

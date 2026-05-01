@@ -11,6 +11,9 @@ fi
 
 export CURSOR_API_KEY="$(tr -d ' \r\n' < "$ROOT/cursor_key.txt")"
 export CURSOR_GITHUB_REPO="${CURSOR_GITHUB_REPO:-https://github.com/xslkim/AuteTest}"
+# Cursor Cloud Agent 固定模型（覆盖：启动前 export CURSOR_AGENT_MODEL=其它id）
+export CURSOR_AGENT_MODEL="${CURSOR_AGENT_MODEL:-composer-2}"
+# 未设置时默认 startingRef=main（GitHub 集成正常后即可）；需要时用 export CURSOR_GITHUB_REF=...
 
 # 可选：从 github.txt 提取 classic PAT，启动前 pull 一次，让本地 git log 能尽快看到云端 Agent 的提交
 if [[ -f "$ROOT/github.txt" ]]; then

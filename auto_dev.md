@@ -30,6 +30,29 @@ python auto_dev.py --max-tasks 3
 python auto_dev.py --prompt-only
 ```
 
+### Cursor Cloud Agent 指定模型（与 IDE 里选「Auto」）
+
+官方 API **没有** `model: "auto"` 字符串；正确做法是 **不传 `model` 字段**，Cursor 会按顺序解析：你的账户默认模型 → 团队默认 → 系统默认（见 [Cloud Agents API — Create An Agent](https://cursor.com/docs/cloud-agent/api/endpoints)）。
+
+本脚本约定：
+
+| 写法 | 行为 |
+|------|------|
+| 不传 / 留空 | 不传 `model`，即「交给 Cursor 默认」（最接近 IDE 的 Auto） |
+| `auto`、`default`、`omit` | 同上 |
+| 具体 id | 传入 `{"model":{"id":"..."}}`，id 必须来自 `GET https://api.cursor.com/v1/models` |
+
+示例：
+
+```bash
+export CURSOR_AGENT_MODEL=auto    # 或不设置
+python auto_dev.py --mode cursor
+
+# 使用列表里的某个固定模型（示例名以 API 返回为准）
+export CURSOR_AGENT_MODEL=composer-2
+python auto_dev.py --mode cursor
+```
+
 
 Agent 具备的能力
 Claude API 模式下，脚本给 Agent 提供了 4 种工具：
