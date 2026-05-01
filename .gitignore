@@ -1,3 +1,9 @@
 # 本地密钥，切勿提交
 cursor_key.txt
 github.txt
+
+node_modules/
+dist/
+build/
+.cache/
+*.log
