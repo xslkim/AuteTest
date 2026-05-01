@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T2.1`
-- **last_updated**: `2026-05-01T23:05:00Z`
-- **next_action**: `实现 CacheStore（锁、manifest、LRU eviction）并完成单测`
-- **completed**: `8 / 35`
+- **active_task**: `T2.2`
+- **last_updated**: `2026-05-01T23:45:00Z`
+- **next_action**: `开始 T2.2 — cache CLI`
+- **completed**: `9 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -37,7 +37,7 @@
 | T1.3 | 旁白预处理 | done | 2026-05-01T18:30:00Z | 2026-05-01T19:05:00Z | 991a46f | — |
 | T1.4 | 资产 hash 复制 | done | 2026-05-01T20:00:00Z | 2026-05-01T20:10:00Z | 3eeb9a8 | — |
 | T1.5 | compile 命令组装 | done | 2026-05-01T21:15:00Z | 2026-05-01T22:20:00Z | 7db4e67 | — |
-| T2.1 | 缓存 store | in_progress | 2026-05-01T23:05:00Z | — | — | — |
+| T2.1 | 缓存 store | done | 2026-05-01T23:05:00Z | 2026-05-01T23:45:00Z | 3026706 | `evictIfOverLimit({ triggerStageStart })` 对接 §11.4 compile 不触发 |
 | T2.2 | cache CLI | pending | — | — | — | — |
 | T3.1 | VoxCPM FastAPI wrapper | pending | — | — | — | — |
 | T3.2 | voxcpm-client + autoStart | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T2.1 — 缓存 store @ 3026706
+- acceptance: put→get 命中、不同 key miss、并发 put 无冲突（多 worker）→ ✓；超限按 partial→component→audio 驱逐且同层 LRU → ✓；`--older-than`（`ms`）与 `--stale` 谓词 → ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/cache/store.ts` / `tests/cache-store.test.ts` / `tests/cache-worker-put.ts` / `.gitignore`（忽略测试临时目录）
+- 备注：`clean` 同时传 `olderThanMs` 与 `stale` 时为 AND；决策见决策日志 T2.1
 
 ### T1.5 — compile 命令组装 @ 7db4e67
 - acceptance: pipeline 串接 → ✓；`subtitleSafeBottom = floor(height*0.15)` → ✓；Zod 校验 → ✓；`script.json` 与 `public/script.json` 同内容且含 `artifacts.compiledAt` → ✓；默认 `./build/{slug}/` + `slug:` + CJK slugify（pinyin-pro）→ ✓；快照（2 块+图）稳定 → ✓；`script-microgpt-part1-1` 风格 E2E fixture → ✓；`npm run test` + `npm run build` → ✓
@@ -176,6 +181,12 @@
 - 选择方案：逐字符扫描——`\` 后紧跟 `*` 则吞掉反斜杠并输出一个字面 `*`；其余 `\` 保留为字面字符。
 - 备选方案：仅替换字面子串 `\*\*` — TypeScript/正则单次替换无法表达「两个连续转义星号」，且无法一致处理文档中 `\foo` 等边角输入。
 - 影响范围：仅 `parseNarrationLine`；与 Markdown 常见「星号转义」心智一致。
+
+### 2026-05-01 23:40 | T2.1
+- 模糊点：PRD §11.5 `cache clean` 在同用 `--older-than` 与 `--stale` 时未说明组合语义。
+- 选择方案：`CleanCacheOptions` 中各条件按 AND 收敛；仅当 `type`/`olderThanMs`/`stale` 全部满足（已指定的项）时删除。
+- 备选方案：OR — 易删掉仍应保留的条目。
+- 影响范围：`CacheStore.clean`；T2.2 CLI 应保持一致。
 
 ---
 
