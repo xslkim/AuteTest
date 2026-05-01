@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `实现 package.json / tsconfig / rem CLI 骨架 / bin 占位`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:35:00Z`
+- **next_action**: `开始 T0.2 — 类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:00:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:00:00Z | 2026-05-01T12:35:00Z | cf24c7f | PRD §6.4：Remotion 4 用 overrideFfmpegCommand 注入 x264 GOP；见 `238eaed` |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T0.1 — 仓库骨架 @ cf24c7f
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示所有子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 + "not implemented" → ✓
+- artifacts: `package.json` / `package-lock.json` / `tsconfig.json` / `remotion.config.ts` / `.gitignore` / `bin/autovideo.ts`
+- 备注：Remotion 4 无 `Config.setKeyframeInterval`，`remotion.config.ts` 使用 `overrideFfmpegCommand` 注入 `-x264-params keyint=1:min-keyint=1:scenecut=0`；PRD §6.4 已同步（`238eaed`）
 
 （开发中由 agent 追加）
 
