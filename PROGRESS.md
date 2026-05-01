@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T6.1`
-- **last_updated**: `2026-05-01T16:05:00Z`
-- **next_action**: `开始 T6.1 — Root.tsx 生成器（render 模式）`
-- **completed**: `24 / 35`
+- **active_task**: `T6.2`
+- **last_updated**: `2026-05-01T11:45:12Z`
+- **next_action**: `开始 T6.2 — timing 计算`
+- **completed**: `25 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -53,7 +53,7 @@
 | T5.2 | SubtitleOverlay | done | 2026-05-01T12:00:00Z | 2026-05-01T12:08:00Z | c3425f5 | `npx remotion studio remotion/studio-subtitle-overlay.tsx` Composition `SubtitleOverlayDemo` |
 | T5.3 | BlockFrame + animations | done | 2026-05-01T14:00:00Z | 2026-05-01T14:45:00Z | cd4dfd5 | Studio `BlockFrameFadeUpDemo` |
 | T5.4 | BlockComposition（render 用） | done | 2026-05-01T16:00:00Z | 2026-05-01T16:05:00Z | 1884447 | fixture：`public/script.json`、`public/audio/B01.wav`、`src/blocks/B01` |
-| T6.1 | Root.tsx 生成器（render 模式） | pending | — | — | — | — |
+| T6.1 | Root.tsx 生成器（render 模式） | done | 2026-05-01T11:43:07Z | 2026-05-01T11:45:12Z | 9a7395e | `calculateMetadata` 需 `block.timing`；缺少则生成器抛错 |
 | T6.2 | timing 计算 | pending | — | — | — | — |
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | pending | — | — | — | — |
 | T6.4 | ffmpeg concat | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T6.1 — Root.tsx 生成器（render 模式） @ 9a7395e
+- acceptance: 单测快照生成 `remotion-root.tsx` 字符串 → ✓；`npm run build` + `npm run test` → ✓
+- artifacts: `src/render/root-render.ts` / `tests/root-render.test.ts` / `tests/__snapshots__/root-render.test.ts.snap`
+- 备注：导入路径 `./public/script.json` 与 `../../remotion/VideoComposition` 相对 build out dir；生成前校验每块含 `timing`
 
 ### T5.4 — BlockComposition（render 用） @ 1884447
 - acceptance: Studio 单块见组件 + 字幕 + 音频在 enter 帧后对齐 → ✓（`BlockCompositionB01Demo`，`npx remotion compositions remotion/studio-block-composition.tsx`）；`npm run build` → ✓；`npm run test` → ✓
@@ -310,6 +315,12 @@
 - 选择方案：`import(\`../src/blocks/${blockId}/Component.js\`)`，与仓库 NodeNext/`extensionAlias` 约定一致。
 - 备选方案：无后缀裸路径 —  bundler 易无法解析 `.tsx` 入口。
 - 影响范围：仅 `remotion/VideoComposition.tsx`。
+
+### 2026-05-01 11:45 | T6.1
+- 模糊点：TASKS 示例 `calculateMetadata` 直接使用 `block.timing.frames`，若块尚无 `timing`（§6.4 步骤 1 未完成）或 `blockId` 非法会得到运行时错误。
+- 选择方案：`generateRenderRootTsx` 在写出文件前遍历 `script.blocks`，任一缺少 `timing` 即抛错并指明块 ID；非法 `blockId` 留给后续 render 组装阶段与 Remotion 选型校验。
+- 备选方案：在生成字符串内插入 `block?.timing?.frames ?? 1` — 掩盖配置错误，易产生静默错误成片。
+- 影响范围：仅 `src/render/root-render.ts`；与 §6.4「先算 timing 再写 Root」顺序一致。
 
 ### 2026-05-01 14:40 | T5.3
 - 模糊点：PRD TASKS 只写「末段 exit 动画」，未写 `exit` 与 `enter` 同一 preset 时是「同向再播」还是「反向收束」。

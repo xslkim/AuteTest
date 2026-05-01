@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateRenderRootTsx > matches snapshot for script with block timing 1`] = `
+"import { registerRoot, Composition } from 'remotion';
+import { BlockComposition } from '../../remotion/VideoComposition';
+import script from './public/script.json';
+
+export const Root = () => (
+  <Composition
+    id="Block"
+    component={BlockComposition}
+    durationInFrames={1}
+    fps={script.meta.fps}
+    width={script.meta.width}
+    height={script.meta.height}
+    defaultProps={{ blockId: script.blocks[0].id }}
+    calculateMetadata={({ inputProps }) => {
+      const block = script.blocks.find(b => b.id === inputProps.blockId);
+      return { durationInFrames: block.timing.frames };
+    }}
+  />
+);
+registerRoot(Root);
+"
+`;
