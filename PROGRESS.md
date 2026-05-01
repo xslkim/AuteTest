@@ -99,6 +99,12 @@
 
 （开发中由 agent 追加）
 
+### 2026-05-01 12:35 | T0.1
+- **模糊点**：TASKS.md 要求的 `strict: true` 与依赖树中 `@types/dom-webcodecs` 和 TypeScript `lib.dom.d.ts` 的重复声明触发 TS2717/TS2374，`npm install` 若顺带跑默认 `prepare`/`tsc` 会失败。
+- **选择方案**：在根 `tsconfig.json` 增加 `skipLibCheck: true`（仅跳过 `.d.ts` 校验）；`package.json` 不设 `prepare` 自动编译，由显式脚本/后续 CI 触发。
+- **备选方案**：尝试删除 `@types/dom-webcodecs` 或对齐版本——上游 Remotion 会再次引入，脆弱。
+- **影响范围**：仅 TypeScript 根配置；业务源码仍完整 `strict` 检查。
+
 ---
 
 ## 阻塞 / 待决策（必须停下问人类的事项）
