@@ -6,19 +6,19 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `—`
-- **last_updated**: `2026-05-01T11:20:00Z`
-- **next_action**: `从 T0.1 开始`
+- **active_task**: `T0.1`
+- **last_updated**: `2026-05-01T05:14:56Z`
+- **next_action**: `实现 package.json / tsconfig / remotion.config / bin 入口 / .gitignore`
 - **completed**: `0 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
 
-1. [ ] 已读 `PRD.md` 全文
-2. [ ] 已读 `TASKS.md` 全文
-3. [ ] 已读本文件，确认 `active_task` 与 `next_action`
-4. [ ] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致
+1. [x] 已读 `PRD.md` 全文
+2. [x] 已读 `TASKS.md` 全文
+3. [x] 已读本文件，确认 `active_task` 与 `next_action`
+4. [x] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
+5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（尚无 done 任务）
 
 ---
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | pending | — | — | — | — |
+| T0.1 | 仓库骨架 | in_progress | 2026-05-01T05:14:56Z | — | — | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
