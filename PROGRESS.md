@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T3.2`
-- **last_updated**: `2026-05-02T12:50:00Z`
-- **next_action**: `开始 T3.2 — voxcpm-client + autoStart`
-- **completed**: `11 / 35`
+- **active_task**: `T3.3`
+- **last_updated**: `2026-05-01T10:32:48Z`
+- **next_action**: `开始 T3.3 — ffmpeg helpers`
+- **completed**: `12 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -40,7 +40,7 @@
 | T2.1 | 缓存 store | done | 2026-05-01T23:05:00Z | 2026-05-01T23:45:00Z | 3026706 | `evictIfOverLimit({ triggerStageStart })` 对接 §11.4 compile 不触发 |
 | T2.2 | cache CLI | done | 2026-05-02T00:15:00Z | 2026-05-02T10:25:00Z | 0aa039a | `clean --dry-run`；子命令 `allowUnknownOption` 以兼容 `--cache-dir` 位置 |
 | T3.1 | VoxCPM FastAPI wrapper | done | 2026-05-02T12:00:00Z | 2026-05-02T12:50:00Z | 769b75b | — |
-| T3.2 | voxcpm-client + autoStart | pending | — | — | — | — |
+| T3.2 | voxcpm-client + autoStart | done | 2026-05-01T10:30:43Z | 2026-05-01T10:32:48Z | 3ac0baa | 集成测 `RUN_VOXCPM_INTEGRATION=1` |
 | T3.3 | ffmpeg helpers | pending | — | — | — | — |
 | T3.4 | lineTimings 计算 | pending | — | — | — | — |
 | T3.5 | tts 命令组装 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T3.2 — voxcpm-client + autoStart @ 3ac0baa
+- acceptance: mock fetch：`registerVoice` → `speak` 流程 → ✓；`parseVoxcpmEndpoint` 单测 → ✓；集成：`RUN_VOXCPM_INTEGRATION=1` 时 autoStart 拉起并 `/health` → ✓（默认跳过；CI 无 Python 依赖）
+- artifacts: `src/tts/voxcpm-client.ts` / `src/tts/voxcpm-server.ts` / `tests/voxcpm-client.test.ts` / `tests/voxcpm-server.test.ts` / `tests/voxcpm-server.integration.test.ts`
+- 备注：`ensureVoxcpmServer.dispose()` 对 autoStart 子进程 `SIGTERM`，超时 `SIGKILL`
 
 ### T3.1 — VoxCPM FastAPI wrapper @ 769b75b
 - acceptance: `uvicorn server:app` + `curl`：`GET /health` → ✓；`POST /v1/voices` → ✓；`python server.py`（短时启动）→ ✓；`POST /v1/speech` 返回 `audio/wav`（48kHz，取自 `model.tts_model.sample_rate`）→ 需在本地有效 `VOXCPM_MODEL_DIR` 权重与参考音频下验收（本 CI 环境未加载完整权重时 `/v1/speech` 返回 503，路径已接通）
@@ -191,6 +196,12 @@
 - 选择方案：逐字符扫描——`\` 后紧跟 `*` 则吞掉反斜杠并输出一个字面 `*`；其余 `\` 保留为字面字符。
 - 备选方案：仅替换字面子串 `\*\*` — TypeScript/正则单次替换无法表达「两个连续转义星号」，且无法一致处理文档中 `\foo` 等边角输入。
 - 影响范围：仅 `parseNarrationLine`；与 Markdown 常见「星号转义」心智一致。
+
+### 2026-05-01 10:33 | T3.2
+- 模糊点：PRD §9 `endpoint` 示例含端口；若用户写成 `http://127.0.0.1` 未写端口，`URL` 解析会得到默认 80，与常见本地 8000 不一致。
+- 选择方案：`parseVoxcpmEndpoint` 对 **http** 且无端口时使用 **8000**；https 无端口仍用 443。
+- 备选方案：沿用浏览器默认 80 — autoStart 会把 uvicorn 绑到错误端口，health 永远失败。
+- 影响范围：仅 `ensureVoxcpmServer` 绑定端口；显式端口的 endpoint 不变。
 
 ### 2026-05-02 12:48 | T3.1
 - 模糊点：PRD §6.2.1 写「lazy load」但未写是否预装 ZipEnhancer denoiser；`VoxCPM.generate(denoise=True)` 需 denoiser 已加载。
