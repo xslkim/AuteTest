@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin / .gitignore，验收后 chore(done)`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:45:00Z`
+- **next_action**: `开始 T0.2（类型定义 + Schema）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:00:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:00:00Z | 2026-05-01T12:45:00Z | b290ebd | GOP：`overrideFfmpegCommand` + `-g 1`（见决策日志） |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,11 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ b290ebd
+
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`
+- 备注：`tsc` 构建通过（`dist/bin/autovideo.js`）；TASKS 字面要求的 `Config.setKeyframeInterval` 由 FFmpeg `-g 1` 等价替代（见决策日志 / 已知差异）
 
 ---
 
@@ -97,7 +101,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 12:30 | T0.1
+- 模糊点：PRD §6.4 / TASKS T0.1 要求 `Config.setKeyframeInterval(1)`；当前 `@remotion/cli/config` 的 `Config` 未导出该方法。
+- 选择方案：在 `remotion.config.ts` 中用 `Config.overrideFfmpegCommand`，对 `libx264` 编码插入 `-g 1`，使每帧为关键帧（IDR），满足 concat 首帧 IDR 需求。
+- 备选方案：调用不存在的 API → TypeScript 编译失败。
+- 影响范围：仅 Remotion 渲染输出的 H.264 GOP；后续若 Remotion 增加官方 API 可再收敛。
 
 ---
 
@@ -131,4 +139,9 @@
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
 
-（开发中由 agent 追加）
+### T0.1 | PRD §6.4 GOP / TASKS T0.1 remotion.config | 关键帧间隔配置方式
+
+- PRD 原描述：`remotion.config.ts` 中显式 `setKeyframeInterval(1)`（TASKS T0.1 同）。
+- 实际实现：`Config.overrideFfmpegCommand` 在 `libx264` 编码路径注入 `-g 1`。
+- 原因：当前 `@remotion/cli/config` 未提供 `setKeyframeInterval`。
+- PRD 是否同步更新：是（commits `0c62fe1`, `45672c7`）
