@@ -4,6 +4,7 @@ import { Command } from "commander";
 import { runCompileCommand } from "../src/cli/compile.js";
 import { runCacheCommand } from "../src/cli/cache.js";
 import { runTtsCommand } from "../src/cli/tts.js";
+import { runVisualsCommand } from "../src/cli/visuals.js";
 
 const notImplemented = (): never => {
   console.error("not implemented");
@@ -59,8 +60,16 @@ async function main(): Promise<void> {
   program
     .command("visuals <scriptJson>")
     .description("Generate React components per block")
-    .action(() => {
-      notImplemented();
+    .allowUnknownOption(true)
+    .allowExcessArguments(true)
+    .action(async () => {
+      try {
+        await runVisualsCommand({ argv: process.argv, cwd: process.cwd() });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error(msg);
+        process.exit(1);
+      }
     });
 
   program
