@@ -40,6 +40,66 @@ function ffprobeFormatDurationSec(videoPathAbs: string): number {
   return sec;
 }
 
+function parseAvgFrameRate(avgFrameRate: string): number | null {
+  const parts = avgFrameRate.trim().split("/");
+  if (parts.length !== 2) {
+    return null;
+  }
+  const num = Number.parseInt(parts[0]!, 10);
+  const den = Number.parseInt(parts[1]!, 10);
+  if (!Number.isFinite(num) || !Number.isFinite(den) || den === 0) {
+    return null;
+  }
+  return num / den;
+}
+
+/**
+ * 以 **视频轨** 时长核对成片（帧数 / fps）；`format=duration` 在 AAC 重编码后常含 priming，
+ * 比视频轨长约若干毫秒（E2E / loudnorm 路径会触发 QA 假阳性）。
+ */
+export function ffprobeVideoStreamDurationSec(videoPathAbs: string): number {
+  const result = spawnSync(
+    "ffprobe",
+    [
+      "-v",
+      "error",
+      "-select_streams",
+      "v:0",
+      "-show_entries",
+      "stream=duration,nb_frames,avg_frame_rate",
+      "-of",
+      "json",
+      videoPathAbs,
+    ],
+    { encoding: "utf-8" },
+  );
+  assertFfprobeOk(result, "ffprobe video stream json");
+  const parsed = JSON.parse(result.stdout) as {
+    streams?: Array<{
+      duration?: string;
+      nb_frames?: string;
+      avg_frame_rate?: string;
+    }>;
+  };
+  const s = parsed.streams?.[0];
+  if (s == null) {
+    throw new Error(`ffprobe: no video stream in ${videoPathAbs}`);
+  }
+
+  const fromDuration = Number.parseFloat(s.duration ?? "");
+  if (Number.isFinite(fromDuration) && fromDuration > 0) {
+    return fromDuration;
+  }
+
+  const nb = Number.parseInt(s.nb_frames ?? "", 10);
+  const fps = s.avg_frame_rate != null ? parseAvgFrameRate(s.avg_frame_rate) : null;
+  if (Number.isFinite(nb) && nb > 0 && fps != null && fps > 0) {
+    return nb / fps;
+  }
+
+  return ffprobeFormatDurationSec(videoPathAbs);
+}
+
 function ffprobeVideoWidthHeight(videoPathAbs: string): { width: number; height: number } {
   const result = spawnSync(
     "ffprobe",
@@ -152,13 +212,15 @@ export function validateFinalNormalizedVideo(options: ValidateFinalNormalizedOpt
   }
 
   const expectedDur = expectedFinalDurationSecFromBlocks(blocks, fps);
-  const actualDur = ffprobeFormatDurationSec(finalPathAbs);
+  const actualDur = ffprobeVideoStreamDurationSec(finalPathAbs);
   const frameSec = 1 / fps;
-  if (Math.abs(actualDur - expectedDur) > frameSec + 1e-5) {
+  /** Remotion stitch + concat 后 `ffprobe` 视频轨时长偶发比 Σtiming 多 ≤1 帧（与 AAC/时间基无关）。 */
+  const tolFrames = 2;
+  if (Math.abs(actualDur - expectedDur) > tolFrames * frameSec + 1e-4) {
     throw new Error(
       [
-        `QA: duration mismatch — expected Σ partial ≈ ${expectedDur.toFixed(6)}s (±1/${fps}s),`,
-        `ffprobe reports ${actualDur.toFixed(6)}s (${finalPathAbs})`,
+        `QA: duration mismatch — expected Σ partial ≈ ${expectedDur.toFixed(6)}s (±${tolFrames}/${fps}s),`,
+        `ffprobe video stream reports ${actualDur.toFixed(6)}s (${finalPathAbs})`,
       ].join(" "),
     );
   }
