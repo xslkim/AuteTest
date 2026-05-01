@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T9.4`
-- **last_updated**: `2026-05-01T14:05:00Z`
-- **next_action**: `开始 T9.4 — 文档`
+- **last_updated**: `2026-05-01T16:00:00Z`
+- **next_action**: `实现 docs/INPUT_SPEC.md、扩展 ARCHITECTURE、根 README`
 - **completed**: `39 / 40`
 - **blockers**: `0`
 
@@ -68,7 +68,7 @@
 | T9.1 | 单测补全 | done | 2026-05-03T12:00:00Z | 2026-05-03T13:25:00Z | e0e3b70 | 合并为 `parser.test.ts` / `cache.test.ts` / `tts-timings.test.ts`；`cache` CLI 单测 |
 | T9.2 | E2E 测试 | done | 2026-05-03T14:00:00Z | 2026-05-03T14:40:00Z | f67844c | `npm run test:e2e`；QA 用视频轨时长 + ±2 帧 |
 | T9.3 | install.sh | done | 2026-05-01T14:00:00Z | 2026-05-01T14:05:00Z | 6c83675 | `--skip-model` 写占位 `config.json`；需有效 `ANTHROPIC_API_KEY` 才能 doctor 全 PASS |
-| T9.4 | 文档 | pending | — | — | — | — |
+| T9.4 | 文档 | in_progress | 2026-05-01T16:00:00Z | — | — | 撰写 INPUT_SPEC / 扩展 ARCHITECTURE / README |
 
 ---
 
