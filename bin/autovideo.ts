@@ -102,7 +102,7 @@ program
 program
   .command('cache')
   .description('Inspect or clean global cache')
-  .argument('[stats-or-clean]', 'stats | clean')
+  .argument('<action>', 'stats | clean')
   .option('--type <type>')
   .option('--older-than <duration>')
   .option('--stale')
