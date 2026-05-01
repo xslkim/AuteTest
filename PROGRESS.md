@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T6.2`
-- **last_updated**: `2026-05-01T14:35:00Z`
-- **next_action**: `开始 T6.3 — partial 渲染（程序化 bundle + renderMedia）`
-- **completed**: `26 / 35`
+- **active_task**: `T6.4`
+- **last_updated**: `2026-05-01T18:30:00Z`
+- **next_action**: `开始 T6.4 — ffmpeg concat`
+- **completed**: `27 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -55,7 +55,7 @@
 | T5.4 | BlockComposition（render 用） | done | 2026-05-01T16:00:00Z | 2026-05-01T16:05:00Z | 1884447 | fixture：`public/script.json`、`public/audio/B01.wav`、`src/blocks/B01` |
 | T6.1 | Root.tsx 生成器（render 模式） | done | 2026-05-01T11:43:07Z | 2026-05-01T11:45:12Z | 9a7395e | `calculateMetadata` 需 `block.timing`；缺少则生成器抛错 |
 | T6.2 | timing 计算 | done | 2026-05-01T14:00:00Z | 2026-05-01T14:35:00Z | 8b7899b | `computeBlockTiming` / `applyTimingsToBlocks`；帧数与 `VideoComposition` fallback 对齐 |
-| T6.3 | partial 渲染（程序化 bundle + renderMedia） | pending | — | — | — | — |
+| T6.3 | partial 渲染（程序化 bundle + renderMedia） | done | 2026-05-01T16:00:00Z | 2026-05-01T18:25:00Z | b3191ea | 集成测 `RUN_RENDER_PARTIAL_INTEGRATION=1` |
 | T6.4 | ffmpeg concat | pending | — | — | — | — |
 | T6.5 | loudnorm two-pass | pending | — | — | — | — |
 | T6.6 | 质量校验 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T6.3 — partial 渲染（程序化 bundle + renderMedia） @ b3191ea
+- acceptance: 两块 partial + `ffprobe` 首包 flags 含 `K`（IDR 语义）→ ✓；第二次运行 `renderMedia` 调用 0 次、`cacheHit` 路径 → ✓；`npm run build` + `npm run test` → ✓（集成：`RUN_RENDER_PARTIAL_INTEGRATION=1`）
+- artifacts: `src/render/render-blocks.ts` / `src/render/partial-cache-key.ts` / `src/render/block-imports.ts` / `remotion/VideoComposition.tsx` / `remotion/studio-block-imports.ts` / `tests/render-blocks.test.ts` / `tests/render-blocks.integration.test.ts`
+- 备注：`calculateMetadata` 使用 `props`（remotion `resolveVideoConfig`）；script 静态路径 `public/script.json`；每构建生成 `src/remotion-block-imports.ts` + `bundle` 内 `@autovideo-block-imports` 别名
 
 ### T6.2 — timing 计算 @ 8b7899b
 - acceptance: fade-up 0.5s + hold 音频 3s + fade exit 0.3s @ 30fps → `frames === 114` → ✓；`npm run build` + `npm run test` → ✓
@@ -224,6 +229,30 @@
 > - 选择方案：<采纳的实现>
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
+
+### 2026-05-01 18:30 | T6.3
+- 模糊点：示例与旧文档写 `calculateMetadata({ inputProps })`；Remotion 4 `resolveVideoConfig` 向 `calculateMetadata` 传 `props`（字段名为 `props`）。
+- 选择方案：生成器改为 `({ props })`，与运行时一致。
+- 备选方案：沿用 `inputProps` — `props` 为 `undefined`，`selectComposition` 失败。
+- 影响范围：`src/render/root-render.ts`、快照。
+
+### 2026-05-01 18:32 | T6.3
+- 模糊点：动态 `import(\`../src/blocks/${blockId}/Component.js\`)` 解析相对 `remotion/`，始终落在仓库 `src/blocks`，无法指向 `<build out>/src/blocks`；Webpack 亦难以对「完全动态」路径稳定分包。
+- 选择方案：render 阶段生成 `<build>/src/remotion-block-imports.ts` 显式 `import("./blocks/...")` 表；`bundle()` 的 `webpackOverride` 将 `@autovideo-block-imports` 指到该文件；Studio 用 `remotion/studio-block-imports.ts` 相对导入；`BlockComposition` 增加必填 `blockLoaders`。
+- 备选方案：强约束 build out 必须在仓库内固定相对路径 — 与临时目录/测试布局冲突。
+- 影响范围：`remotion/VideoComposition.tsx`、`remotion/studio-block-composition.tsx`、`src/render/render-blocks.ts`。
+
+### 2026-05-01 18:34 | T6.3
+- 模糊点：`fetchScriptJson` 使用 `new URL(path, document.baseURI)`；bundle 将静态文件挂到 `/public/...`。
+- 选择方案：`DEFAULT_SCRIPT_PUBLIC_PATH = "public/script.json"`；Studio fixture 显式 `scriptPublicPath="script.json"`（其 base 与仓库 `public/` 一致）。
+- 备选方案：改写 `fetchScriptJson` 自动加 `public/` — 行为因入口而异，难测。
+- 影响范围：`VideoComposition` 默认 prop、Studio demo。
+
+### 2026-05-01 18:36 | T6.3
+- 模糊点：TASKS 写「ffprobe 首帧 `key_frame=1`」；部分 ffprobe 版本在 `-show_frames` 首行输出非纯数字。
+- 选择方案：`-show_entries packet=flags`，首视频包 `flags` 含 `K` 即关键帧。
+- 备选方案：只信 `-show_frames` 首行 — 易假阴性。
+- 影响范围：仅 `tests/render-blocks.integration.test.ts`。
 
 ### 2026-05-01 09:30 | T0.1
 - 模糊点：PRD §13.1 未列出 `@remotion/cli`，但 Remotion 4 官方要求 `remotion.config.ts` 从 `@remotion/cli/config` 导入 `Config`。

@@ -3,19 +3,22 @@
 exports[`generateRenderRootTsx > matches snapshot for script with block timing 1`] = `
 "import { registerRoot, Composition } from 'remotion';
 import { BlockComposition } from '../../remotion/VideoComposition';
+import { blockLoaders } from './src/remotion-block-imports';
 import script from './public/script.json';
 
 export const Root = () => (
   <Composition
     id="Block"
-    component={BlockComposition}
+    component={(props) => (
+      <BlockComposition blockId={props.blockId} blockLoaders={blockLoaders} />
+    )}
     durationInFrames={1}
     fps={script.meta.fps}
     width={script.meta.width}
     height={script.meta.height}
     defaultProps={{ blockId: script.blocks[0].id }}
-    calculateMetadata={({ inputProps }) => {
-      const block = script.blocks.find(b => b.id === inputProps.blockId);
+    calculateMetadata={({ props }) => {
+      const block = script.blocks.find(b => b.id === props.blockId);
       return { durationInFrames: block.timing.frames };
     }}
   />

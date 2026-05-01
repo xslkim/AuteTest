@@ -8,30 +8,52 @@ function assertBlockHasTiming(
   }
 }
 
+export interface GenerateRenderRootTsxOptions {
+  /**
+   * `remotion-root.tsx` → `remotion/VideoComposition` 的模块路径（POSIX、无 `.tsx` 后缀）。
+   * 省略时默认 `../../remotion/VideoComposition`（`build/{slug}/` 位于仓库内时）。
+   */
+  blockCompositionImportPath?: string;
+  /**
+   * `blockLoaders` 表的 import（POSIX）。默认 `./src/remotion-block-imports`（文件由 render 阶段生成）。
+   */
+  blockLoadersImportPath?: string;
+}
+
 /**
  * 生成 render 阶段写入 `<build out>/remotion-root.tsx` 的源码。
- * cwd 为 build out dir 时，`./public/script.json` 与 `../../remotion/VideoComposition` 路径与 PRD §8.3 / TASKS T6.1 一致。
+ * `./public/script.json` 相对该文件所在目录（build out dir）。
  */
-export function generateRenderRootTsx(script: Script): string {
+export function generateRenderRootTsx(
+  script: Script,
+  options: GenerateRenderRootTsxOptions = {},
+): string {
   for (const block of script.blocks) {
     assertBlockHasTiming(block);
   }
 
+  const blockCompositionImport =
+    options.blockCompositionImportPath ?? "../../remotion/VideoComposition";
+  const blockLoadersImport = options.blockLoadersImportPath ?? "./src/remotion-block-imports";
+
   return `import { registerRoot, Composition } from 'remotion';
-import { BlockComposition } from '../../remotion/VideoComposition';
+import { BlockComposition } from '${blockCompositionImport}';
+import { blockLoaders } from '${blockLoadersImport}';
 import script from './public/script.json';
 
 export const Root = () => (
   <Composition
     id="Block"
-    component={BlockComposition}
+    component={(props) => (
+      <BlockComposition blockId={props.blockId} blockLoaders={blockLoaders} />
+    )}
     durationInFrames={1}
     fps={script.meta.fps}
     width={script.meta.width}
     height={script.meta.height}
     defaultProps={{ blockId: script.blocks[0].id }}
-    calculateMetadata={({ inputProps }) => {
-      const block = script.blocks.find(b => b.id === inputProps.blockId);
+    calculateMetadata={({ props }) => {
+      const block = script.blocks.find(b => b.id === props.blockId);
       return { durationInFrames: block.timing.frames };
     }}
   />
