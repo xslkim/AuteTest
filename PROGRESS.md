@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T05:16:24Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin / .gitignore，验收 npm install 与 CLI --help`
-- **completed**: `0 / 35`
+- **active_task**: `—`
+- **last_updated**: `2026-05-01T05:19:22Z`
+- **next_action**: `开始 T0.2（类型定义 + Schema）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T05:16:24Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T05:16:24Z | 2026-05-01T05:19:22Z | `40a5449` | feat 含 PRD §6.4 remotion 配置说明修订 |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,11 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ 40a544953203e38b3ccffca04af4e55703cd57a1
+
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且含 `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`
+- 备注：Remotion 4 无 `setKeyframeInterval`，以 `overrideFfmpegCommand` + `-g 1` 实现 GOP；PRD §6.4 已同步。
 
 ---
 
@@ -97,7 +101,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 05:20 | T0.1
+- 模糊点：PRD `remotion.config.ts` 写明 `Config.setKeyframeInterval(1)`；当前 `@remotion/cli` v4 类型与运行时均无该方法。
+- 选择方案：`Config.overrideFfmpegCommand` 在 `type === "stitcher"` 且编码器为 `libx264` 时插入 `-g`、`1`，等价 GOP=1；并同步修订 PRD §6.4。
+- 备选方案：等待上游恢复 API — 会阻塞验收与 `tsc`。
+- 影响范围：仅 `remotion.config.ts` 与 PRD 文档；后续 render 阶段行为与 PRD 目标一致。
 
 ---
 
@@ -116,12 +124,6 @@
 > - agent 倾向：<A / B / 其他> 理由
 
 （开发中由 agent 追加）
-
-### 2026-05-01 05:20 | T0.1
-- 模糊点：PRD `remotion.config.ts` 写明 `Config.setKeyframeInterval(1)`；当前 `@remotion/cli` v4 类型与运行时均无该方法。
-- 选择方案：`Config.overrideFfmpegCommand` 在 `type === "stitcher"` 且编码器为 `libx264` 时插入 `-g`、`1`，等价 GOP=1；并同步修订 PRD §6.4。
-- 备选方案：等待上游恢复 API — 会阻塞验收与 `tsc`。
-- 影响范围：仅 `remotion.config.ts` 与 PRD 文档；后续 render 阶段行为与 PRD 目标一致。
 
 ---
 
