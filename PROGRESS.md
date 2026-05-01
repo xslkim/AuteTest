@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:05:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin CLI stub`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:45:00Z`
+- **next_action**: `开始 T0.2 — 类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -18,7 +18,7 @@
 2. [x] 已读 `TASKS.md` 全文
 3. [x] 已读本文件，确认 `active_task` 与 `next_action`
 4. [x] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（尚无 done 任务）
+5. [x] 任务表最近 `done` 行的 Commit 与实现提交一致（T0.1：`0c16aa1`）；推送前 `git log -1` 应为 `chore(T0.1): done`
 
 ---
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:05:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T12:45:00Z | 0c16aa1 | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ 0c16aa1
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示所有子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 "not implemented" → ✓
+- artifacts: `package.json`、`tsconfig.json`、`remotion.config.ts`、`.gitignore`、`bin/autovideo.ts`
+- 备注：为通过 `remotion.config.ts` 的 `Config` 导入，在 devDependencies 中增加 `@remotion/cli`（PRD §13.1 未单独列出该包）。环境为 Node v18.19.1（低于 PRD §doctor 所述 ≥20）；验收在本环境中完成。
 
 ---
 
@@ -97,7 +100,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 12:40 | T0.1
+- 模糊点：PRD §13.1 仅列出 `@remotion/bundler`、`@remotion/renderer`、`remotion`；`remotion.config.ts` 按 TASKS 使用 `import { Config } from "@remotion/cli/config"`。
+- 选择方案：在 `package.json` 的 `devDependencies` 中加入 `@remotion/cli` ^4.0.0，与 Remotion 主版本对齐。
+- 备选方案：不写 `remotion.config.ts` 或改用其他 Config 入口 — 与 T0.1 验收要求冲突或 API 不可用。
+- 影响范围：仅依赖声明；后续 Remotion CLI/ bundler 版本需保持同主版本线。
 
 ---
 
