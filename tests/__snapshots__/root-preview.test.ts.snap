@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generatePreviewRootTsx > matches snapshot for multiple blocks without timing 1`] = `
+"import { registerRoot, Composition } from 'remotion';
+import { BlockComposition, previewCompositionDurationFrames } from '../../remotion/VideoComposition';
+import { blockLoaders } from './src/remotion-block-imports';
+import script from './public/script.json';
+
+export const Root = () => (
+  <>
+    {script.blocks.map((block) => (
+      <Composition
+        key={block.id}
+        id={block.id}
+        component={() => (
+          <BlockComposition blockId={block.id} blockLoaders={blockLoaders} />
+        )}
+        durationInFrames={previewCompositionDurationFrames(block, script.meta.fps)}
+        fps={script.meta.fps}
+        width={script.meta.width}
+        height={script.meta.height}
+      />
+    ))}
+  </>
+);
+registerRoot(Root);
+"
+`;
