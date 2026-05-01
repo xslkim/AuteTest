@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:05:00Z`
-- **next_action**: `实现 package.json/tsconfig/remotion CLI 骨架并完成验收`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:30:00Z`
+- **next_action**: `开始 T0.2 — 类型定义与 JSON Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:05:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T12:30:00Z | `c95a8b8` | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ `c95a8b8`
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且 stderr 含 `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`.gitignore`、`bin/autovideo.ts`
+- 备注：`remotion.config.ts` 依赖 `@remotion/cli` 的 `Config`（写入 `dependencies`）。
 
 ---
 
@@ -97,7 +100,13 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 12:28 | T0.1
+- 模糊点：TASKS.md 写明「注册 9 个子命令」，列举为 8 个名称但其中含 `doctor`/`init`，与 commander 条目数不一致。
+- 选择方案：按 PRD §7 所列 9 个子命令注册（`build`、`compile`、`tts`、`visuals`、`render`、`preview`、`cache`、`doctor`、`init`）。
+- 备选方案：强行凑「8」条命令 — 会与 PRD 冲突。
+- 影响范围：仅 CLI stub 结构与帮助文案。
+
+（开发中由 agent 追加后续决策）
 
 ---
 
