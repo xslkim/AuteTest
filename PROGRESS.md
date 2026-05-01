@@ -7,7 +7,7 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T0.2`
-- **last_updated**: `2026-05-01T05:22:51Z`
+- **last_updated**: `2026-05-01T05:24:22Z`
 - **next_action**: `开始 T0.2（类型定义 + Schema）`
 - **completed**: `1 / 35`
 - **blockers**: `0`
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | done | 2026-05-01T05:19:04Z | 2026-05-01T05:22:51Z | 0941504 | 实现主体 41dddb4 |
+| T0.1 | 仓库骨架 | done | 2026-05-01T05:19:04Z | 2026-05-01T05:22:51Z | af19d4f | 实现主体 41dddb4 |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,7 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-### T0.1 — 仓库骨架 @ 0941504
+### T0.1 — 仓库骨架 @ af19d4f
 - acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示所有子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 + "not implemented" → ✓
 - artifacts: `package.json` / `package-lock.json` / `tsconfig.json` / `remotion.config.ts` / `.gitignore` / `bin/autovideo.ts`
 - 备注：`Config.setKeyframeInterval` 在 Remotion 4 中已移除，`remotion.config.ts` 使用 `overrideFfmpegCommand` 注入 `-g 1 -keyint_min 1`（见决策日志）。
