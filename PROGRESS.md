@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T12:45:00Z | 03efb806ae5a16de86f488009760536035c0d3b8 | GOP：libx264 `-g 1` via remotion.config |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:05:00Z | 2026-05-01T12:45:00Z | 0daaf9d | GOP：libx264 `-g 1` via remotion.config |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
