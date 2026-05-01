@@ -2,6 +2,7 @@
 
 import { Command } from "commander";
 import { runCompileCommand } from "../src/cli/compile.js";
+import { runCacheCommand } from "../src/cli/cache.js";
 
 const notImplemented = (): never => {
   console.error("not implemented");
@@ -70,8 +71,16 @@ async function main(): Promise<void> {
   program
     .command("cache")
     .description("Cache utilities")
-    .action(() => {
-      notImplemented();
+    .allowUnknownOption(true)
+    .allowExcessArguments(true)
+    .action(async () => {
+      try {
+        await runCacheCommand({ argv: process.argv, cwd: process.cwd() });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error(msg);
+        process.exit(1);
+      }
     });
 
   program.command("doctor").description("Check local environment").action(() => {

@@ -7,9 +7,9 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T2.2`
-- **last_updated**: `2026-05-01T23:45:00Z`
-- **next_action**: `开始 T2.2 — cache CLI`
-- **completed**: `9 / 35`
+- **last_updated**: `2026-05-02T10:25:00Z`
+- **next_action**: `开始 T3.1 — VoxCPM FastAPI wrapper`
+- **completed**: `10 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -38,7 +38,7 @@
 | T1.4 | 资产 hash 复制 | done | 2026-05-01T20:00:00Z | 2026-05-01T20:10:00Z | 3eeb9a8 | — |
 | T1.5 | compile 命令组装 | done | 2026-05-01T21:15:00Z | 2026-05-01T22:20:00Z | 7db4e67 | — |
 | T2.1 | 缓存 store | done | 2026-05-01T23:05:00Z | 2026-05-01T23:45:00Z | 3026706 | `evictIfOverLimit({ triggerStageStart })` 对接 §11.4 compile 不触发 |
-| T2.2 | cache CLI | pending | — | — | — | — |
+| T2.2 | cache CLI | done | 2026-05-02T00:15:00Z | 2026-05-02T10:25:00Z | 0aa039a | `clean --dry-run`；子命令 `allowUnknownOption` 以兼容 `--cache-dir` 位置 |
 | T3.1 | VoxCPM FastAPI wrapper | pending | — | — | — | — |
 | T3.2 | voxcpm-client + autoStart | pending | — | — | — | — |
 | T3.3 | ffmpeg helpers | pending | — | — | — | — |
@@ -81,7 +81,12 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-### T2.1 — 缓存 store @ 3026706
+### T2.2 — cache CLI @ 0aa039a
+- acceptance: `stats | clean` 符合 §11.5；`stats` JSON + 默认表格双输出 → ✓；空目录 0 条目、put 后计数正确（`--cache-dir`）→ ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/cli/cache.ts` / `bin/autovideo.ts` / `src/cache/store.ts`（`clean({ dryRun })`）/ `tests/cache-store.test.ts`
+- 备注：`--stale` 将 manifest 中 `promptVersion` / `remotionVersion` 与当前 toolchain 比对；尚无 `src/ai/prompts/component.md` 时 prompt 前缀为 null，component 侧不因 `--stale` 删除（决策日志 T2.2）
+
+---
 - acceptance: put→get 命中、不同 key miss、并发 put 无冲突（多 worker）→ ✓；超限按 partial→component→audio 驱逐且同层 LRU → ✓；`--older-than`（`ms`）与 `--stale` 谓词 → ✓；`npm run test` + `npm run build` → ✓
 - artifacts: `src/cache/store.ts` / `tests/cache-store.test.ts` / `tests/cache-worker-put.ts` / `.gitignore`（忽略测试临时目录）
 - 备注：`clean` 同时传 `olderThanMs` 与 `stale` 时为 AND；决策见决策日志 T2.1
@@ -181,6 +186,12 @@
 - 选择方案：逐字符扫描——`\` 后紧跟 `*` 则吞掉反斜杠并输出一个字面 `*`；其余 `\` 保留为字面字符。
 - 备选方案：仅替换字面子串 `\*\*` — TypeScript/正则单次替换无法表达「两个连续转义星号」，且无法一致处理文档中 `\foo` 等边角输入。
 - 影响范围：仅 `parseNarrationLine`；与 Markdown 常见「星号转义」心智一致。
+
+### 2026-05-02 10:24 | T2.2
+- 模糊点：PRD §11.5 `--stale` 依赖 prompt 文件哈希；仓库尚无 `src/ai/prompts/component.md`（T4.1）时无法比对。
+- 选择方案：若当前 md5 前缀解析失败（文件不存在），`--stale` 仅按 `@remotion/renderer` 版本剔除过时 partial；component 不因缺失前缀误判而清空。
+- 备选方案：用占位前缀常量 — 会在将来引入 prompt 文件后与真实哈希不一致，导致误删或语义漂移。
+- 影响范围：`cache clean --stale`；T4.1 加入 prompt 后 component stale 自动生效。
 
 ### 2026-05-01 23:40 | T2.1
 - 模糊点：PRD §11.5 `cache clean` 在同用 `--older-than` 与 `--stale` 时未说明组合语义。

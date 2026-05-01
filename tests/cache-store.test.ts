@@ -340,4 +340,26 @@ describe("CacheStore", () => {
     expect(s.hitCountByType.audio.count).toBe(1);
     expect(s.hitCountByType.audio.hitsTotal).toBeGreaterThanOrEqual(1);
   });
+
+  it("clean dryRun counts matches but keeps manifest and files", async () => {
+    root = path.join(import.meta.dirname, "..", ".cache-test-clean-dry-", String(Date.now()));
+    const store = new CacheStore({ cacheDir: root, maxSizeGB: 20 });
+    await store.ensureLayout();
+    const src = path.join(root, "blob.wav");
+    await fs.writeFile(src, "z");
+
+    await store.put("audio", "dryk", src, {
+      ttsText: "t",
+      voiceRefHash: "h",
+      cfgValue: 1,
+      inferenceTimesteps: 1,
+      denoise: false,
+      voxcpmModelVersion: "mv",
+    });
+
+    const n = await store.clean({ type: "audio", dryRun: true });
+    expect(n).toBe(1);
+    expect(await store.get("audio", "dryk")).not.toBeNull();
+    await expect(fs.access(path.join(root, "audio", "dryk.wav"))).resolves.toBeUndefined();
+  });
 });
