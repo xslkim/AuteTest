@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T5.3`
-- **last_updated**: `2026-05-01T12:08:00Z`
-- **next_action**: `开始 T5.3 — BlockFrame + animations`
+- **last_updated**: `2026-05-01T14:00:00Z`
+- **next_action**: `实现 animations.ts + block-frame.tsx；Studio 验收 fade-up`
 - **completed**: `22 / 35`
 - **blockers**: `0`
 
@@ -51,7 +51,7 @@
 | T4.5 | visuals 命令组装 | done | 2026-05-02T12:00:00Z | 2026-05-02T12:45:00Z | 7eb5c3f | `CompiledBlock` 允许可选 `audio` + `visual.componentPath`；生成顺序执行以满足「失败不启下一块」验收 |
 | T5.1 | theme + 字体加载 | done | 2026-05-01T11:19:15Z | 2026-05-01T11:22:09Z | 84723da | `getTheme`；Noto Sans SC + Noto Color Emoji + JetBrains Mono |
 | T5.2 | SubtitleOverlay | done | 2026-05-01T12:00:00Z | 2026-05-01T12:08:00Z | c3425f5 | `npx remotion studio remotion/studio-subtitle-overlay.tsx` Composition `SubtitleOverlayDemo` |
-| T5.3 | BlockFrame + animations | pending | — | — | — | — |
+| T5.3 | BlockFrame + animations | in_progress | 2026-05-01T14:00:00Z | — | — | — |
 | T5.4 | BlockComposition（render 用） | pending | — | — | — | — |
 | T6.1 | Root.tsx 生成器（render 模式） | pending | — | — | — | — |
 | T6.2 | timing 计算 | pending | — | — | — | — |
