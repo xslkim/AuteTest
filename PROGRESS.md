@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T05:19:04Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin 占位`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T05:22:51Z`
+- **next_action**: `开始 T0.2（类型定义 + Schema）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T05:19:04Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T05:19:04Z | 2026-05-01T05:22:51Z | 41dddb4 | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,11 +81,18 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
+### T0.1 — 仓库骨架 @ 41dddb4
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示所有子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 + "not implemented" → ✓
+- artifacts: `package.json` / `package-lock.json` / `tsconfig.json` / `remotion.config.ts` / `.gitignore` / `bin/autovideo.ts`
+- 备注：`Config.setKeyframeInterval` 在 Remotion 4 中已移除，`remotion.config.ts` 使用 `overrideFfmpegCommand` 注入 `-g 1 -keyint_min 1`（见决策日志）。
+
+### T0.1 | §6.4（GOP / IDR）| Remotion 4 无 setKeyframeInterval
+- PRD 原描述：`remotion.config.ts` 中 `setKeyframeInterval(1)`。
+- 实际实现：`Config.overrideFfmpegCommand` 注入 `-g 1 -keyint_min 1`（见仓库根 `remotion.config.ts`）。
+- 原因：`@remotion/cli@4.x` 的 `Config` 不再导出 `setKeyframeInterval`。
+- PRD 是否同步更新：是（与本 `docs` commit 同次提交）
+
 （开发中由 agent 追加）
-
----
-
-## 决策日志（遇到 PRD 模糊点时记录）
 
 > 当 PRD 中某处描述模糊但 agent 自行决定继续（**不阻塞、不报告人类**）时，必须在这里记录决策。后续如果决策错了，可以按时间倒查。
 >
@@ -142,5 +149,11 @@
 > - 实际实现：<...>
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
+
+### T0.1 | §6.4（GOP / IDR）| Remotion 4 无 setKeyframeInterval
+- PRD 原描述：`remotion.config.ts` 中 `setKeyframeInterval(1)`。
+- 实际实现：`Config.overrideFfmpegCommand` 注入 `-g 1 -keyint_min 1`（见仓库根 `remotion.config.ts`）。
+- 原因：`@remotion/cli@4.x` 的 `Config` 不再导出 `setKeyframeInterval`。
+- PRD 是否同步更新：是（commit `061c7c5`）
 
 （开发中由 agent 追加）
