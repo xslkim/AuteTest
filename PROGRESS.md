@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T7.1`
-- **last_updated**: `2026-05-01T23:58:00Z`
-- **next_action**: `开始 T7.1 — Root.tsx 生成器（preview 模式）`
+- **last_updated**: `2026-05-02T12:10:00Z`
+- **next_action**: `实现 src/preview/root-preview.ts + BlockComposition 无 audio 占位字幕；验收快照`
 - **completed**: `31 / 35`
 - **blockers**: `0`
 
@@ -60,7 +60,7 @@
 | T6.5 | loudnorm two-pass | done | 2026-05-01T21:05:00Z | 2026-05-01T21:25:00Z | fac3410 | `twoPass:false` 为 copy；`inf` 测量显式报错 |
 | T6.6 | 质量校验 | done | 2026-05-01T22:00:00Z | 2026-05-01T22:30:00Z | 779356a | `validateFinalNormalizedVideo`：Σ`timing.frames`/fps ±1 帧、5 段内等距抽样 |
 | T6.7 | render 命令组装 | done | 2026-05-01T23:50:00Z | 2026-05-01T23:58:00Z | 7e33deb | `renderInputSchema` 允许块上可选 `timing`/`render` 以便已完成一轮的 script.json 再次 `render` |
-| T7.1 | Root.tsx 生成器（preview 模式） | pending | — | — | — | — |
+| T7.1 | Root.tsx 生成器（preview 模式） | in_progress | 2026-05-02T12:10:00Z | — | — | — |
 | T7.2 | preview 命令 | pending | — | — | — | — |
 | T8.1 | build orchestrator | pending | — | — | — | — |
 | T8.2 | doctor | pending | — | — | — | — |
