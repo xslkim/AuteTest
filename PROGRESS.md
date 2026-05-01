@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T0.2`
-- **last_updated**: `2026-05-01T09:28:36Z`
-- **next_action**: `开始 T0.2 — 类型定义 + Schema`
+- **last_updated**: `2026-05-01T12:00:00Z`
+- **next_action**: `实现 src/types/script.ts、schemas/script.schema.json 与验收`
 - **completed**: `1 / 35`
 - **blockers**: `0`
 
@@ -30,7 +30,7 @@
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
 | T0.1 | 仓库骨架 | done | 2026-05-01T09:26:26Z | 2026-05-01T09:28:36Z | aa66616 | — |
-| T0.2 | 类型定义 + Schema | pending | — | — | — | — |
+| T0.2 | 类型定义 + Schema | in_progress | 2026-05-01T12:00:00Z | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
 | T1.2 | 块解析 + directive | pending | — | — | — | — |
