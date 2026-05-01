@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T4.5`
-- **last_updated**: `2026-05-01T23:15:00Z`
-- **next_action**: `开始 T4.5 — visuals 命令组装`
+- **last_updated**: `2026-05-02T12:00:00Z`
+- **next_action**: `实现 visuals CLI（缓存 / 并发 / 校验 / 回喂）并完成验收`
 - **completed**: `19 / 35`
 - **blockers**: `0`
 
@@ -48,7 +48,7 @@
 | T4.2 | Claude SDK 调用 + prompt cache | done | 2026-05-01T18:15:00Z | 2026-05-01T19:05:00Z | 2d258b0 | `beta.messages` + `prompt-caching-2024-07-31`；集成测需 `ANTHROPIC_API_KEY` |
 | T4.3 | 子进程隔离工具 | done | 2026-05-01T20:20:00Z | 2026-05-01T21:05:00Z | c1c87ef | `memLimitBytes`/`cpuLimitSec` 可覆盖；默认 8GiB / 600s |
 | T4.4 | 验证（tsc + render smoke） | done | 2026-05-01T22:30:00Z | 2026-05-01T23:14:00Z | f0e887b | `RUN_VISUAL_VALIDATE=0` 跳过 render 集成 |
-| T4.5 | visuals 命令组装 | pending | — | — | — | — |
+| T4.5 | visuals 命令组装 | in_progress | 2026-05-02T12:00:00Z | — | — | — |
 | T5.1 | theme + 字体加载 | pending | — | — | — | — |
 | T5.2 | SubtitleOverlay | pending | — | — | — | — |
 | T5.3 | BlockFrame + animations | pending | — | — | — | — |
