@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `—`
-- **last_updated**: `2026-05-01T11:20:00Z`
-- **next_action**: `从 T0.1 开始`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T09:28:36Z`
+- **next_action**: `开始 T0.2 — 类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | pending | — | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T09:26:26Z | 2026-05-01T09:28:36Z | aa66616 | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,10 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ aa66616
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
+- artifacts: `package.json` / `package-lock.json` / `tsconfig.json` / `remotion.config.ts` / `bin/autovideo.ts` / `.gitignore`
+- 备注：环境经 apt 安装 `nodejs`/`npm` 后完成验收；`@remotion/cli` 见决策日志 T0.1。
 
 ---
 
@@ -97,7 +100,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 09:30 | T0.1
+- 模糊点：PRD §13.1 未列出 `@remotion/cli`，但 Remotion 4 官方要求 `remotion.config.ts` 从 `@remotion/cli/config` 导入 `Config`。
+- 选择方案：在 `dependencies` 中增加 `"@remotion/cli": "^4.0.0"`，与其它 Remotion 包主版本对齐。
+- 备选方案：从 `remotion` 包导入旧版 `Config` — v4 已迁移，易编译或运行时失败。
+- 影响范围：仅 `package.json`；与 §13.1 列表相比多一项 CLI 包，属渲染管线必要配套。
 
 ---
 
