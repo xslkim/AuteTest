@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T1.5`
-- **last_updated**: `2026-05-01T20:10:00Z`
-- **next_action**: `开始 T1.5 — compile 命令组装`
+- **last_updated**: `2026-05-01T21:15:00Z`
+- **next_action**: `实现 src/cli/compile.ts、slugify、快照与 CLI 接线`
 - **completed**: `7 / 35`
 - **blockers**: `0`
 
@@ -36,7 +36,7 @@
 | T1.2 | 块解析 + directive | done | 2026-05-01T09:49:11Z | 2026-05-01T09:52:02Z | 820b0e9 | — |
 | T1.3 | 旁白预处理 | done | 2026-05-01T18:30:00Z | 2026-05-01T19:05:00Z | 991a46f | — |
 | T1.4 | 资产 hash 复制 | done | 2026-05-01T20:00:00Z | 2026-05-01T20:10:00Z | 3eeb9a8 | — |
-| T1.5 | compile 命令组装 | pending | — | — | — | — |
+| T1.5 | compile 命令组装 | in_progress | 2026-05-01T21:15:00Z | — | — | — |
 | T2.1 | 缓存 store | pending | — | — | — | — |
 | T2.2 | cache CLI | pending | — | — | — | — |
 | T3.1 | VoxCPM FastAPI wrapper | pending | — | — | — | — |
