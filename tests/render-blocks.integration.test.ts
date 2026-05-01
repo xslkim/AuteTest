@@ -23,22 +23,23 @@ vi.mock("@remotion/renderer", async (importOriginal) => {
 import { CacheStore } from "../src/cache/store.js";
 import { DEFAULT_RENDER } from "../src/config/defaults.js";
 import { concatPartials } from "../src/render/concat.js";
+import { normalizeFinalWithLoudnorm, probeIntegratedLoudnessLufs } from "../src/render/loudnorm.js";
 import { computePartialCacheBundle } from "../src/render/partial-cache-key.js";
 import { renderBlockPartials, readRemotionRendererVersion } from "../src/render/render-blocks.js";
 import type { Script } from "../src/types/script.js";
+import { wavDurationSec } from "../src/tts/audio.js";
 
 const runIntegration = process.env.RUN_RENDER_PARTIAL_INTEGRATION === "1";
 
 describe.skipIf(!runIntegration)("renderBlockPartials integration", () => {
   const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
   const fixtureScriptPath = join(repoRoot, "public", "script.json");
-  const b01WavSource = join(repoRoot, "public", "audio", "B01.wav");
   const cacheRoot = mkdtempSync(join(tmpdir(), "av-partial-int-"));
   const buildDir = mkdtempSync(join(tmpdir(), "av-build-out-"));
 
   beforeAll(() => {
-    if (!existsSync(fixtureScriptPath) || !existsSync(b01WavSource)) {
-      throw new Error("fixture public/script.json or audio missing");
+    if (!existsSync(fixtureScriptPath)) {
+      throw new Error("fixture public/script.json missing");
     }
   });
 
@@ -69,6 +70,29 @@ describe.skipIf(!runIntegration)("renderBlockPartials integration", () => {
     return first != null && first.includes("K");
   }
 
+  /** Non-silent stereo WAV so ffmpeg loudnorm first pass returns finite `input_i` (fixture `B01.wav` is ~silent). */
+  function writeIntegrationTestWav(outPath: string, durationSec: number): void {
+    const r = spawnSync(
+      "ffmpeg",
+      [
+        "-hide_banner",
+        "-nostats",
+        "-y",
+        "-f",
+        "lavfi",
+        "-i",
+        "sine=frequency=440:sample_rate=48000",
+        "-t",
+        String(durationSec),
+        "-ac",
+        "2",
+        outPath,
+      ],
+      { encoding: "utf8", maxBuffer: 20 * 1024 * 1024 },
+    );
+    expect(r.status).toBe(0);
+  }
+
   function prepareBuildLayout(): Script {
     const script = JSON.parse(readFileSync(fixtureScriptPath, "utf8")) as Script;
     const b01 = script.blocks[0];
@@ -95,8 +119,21 @@ describe.skipIf(!runIntegration)("renderBlockPartials integration", () => {
       recursive: true,
     });
     mkdirSync(join(buildDir, "public", "audio"), { recursive: true });
-    cpSync(b01WavSource, join(buildDir, "public", "audio", "B01.wav"));
-    cpSync(b01WavSource, join(buildDir, "public", "audio", "B02.wav"));
+    const wavB01 = join(buildDir, "public", "audio", "B01.wav");
+    const wavB02 = join(buildDir, "public", "audio", "B02.wav");
+    writeIntegrationTestWav(wavB01, 4);
+    writeIntegrationTestWav(wavB02, 4);
+    const durationSec = wavDurationSec(wavB01);
+    const lineTimings = [
+      { lineIndex: 0, startMs: 0, endMs: 1000 },
+      { lineIndex: 1, startMs: 1200, endMs: 3800 },
+    ];
+    for (const b of script.blocks) {
+      if (b.audio != null) {
+        b.audio.durationSec = durationSec;
+        b.audio.lineTimings = lineTimings;
+      }
+    }
 
     writeFileSync(join(buildDir, "script.json"), `${JSON.stringify(script, null, 2)}\n`, "utf8");
     return script;
@@ -146,6 +183,15 @@ describe.skipIf(!runIntegration)("renderBlockPartials integration", () => {
     expect(replay.status).toBe(0);
     const log = replay.stderr.toLowerCase();
     expect(log).not.toMatch(/non-monotonic dts|invalid timestamps|dts < 0/);
+
+    const normPath = join(buildDir, "output", "final_normalized.mp4");
+    await normalizeFinalWithLoudnorm({
+      finalPathAbs: finalPath,
+      outputPathAbs: normPath,
+      loudnorm: DEFAULT_RENDER.loudnorm,
+    });
+    const lufs = probeIntegratedLoudnessLufs(normPath, DEFAULT_RENDER.loudnorm);
+    expect(Math.abs(lufs - DEFAULT_RENDER.loudnorm.i)).toBeLessThanOrEqual(0.5);
 
     const c1 = computePartialCacheBundle({
       block: script.blocks[0]!,

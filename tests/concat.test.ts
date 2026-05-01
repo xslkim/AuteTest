@@ -4,7 +4,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it, afterAll } from "vitest";
 
+import { DEFAULT_RENDER } from "../src/config/defaults.js";
 import { concatPartials, validatePartials } from "../src/render/concat.js";
+import {
+  normalizeFinalWithLoudnorm,
+  probeIntegratedLoudnessLufs,
+} from "../src/render/loudnorm.js";
 
 function assertFfmpegOk(result: ReturnType<typeof spawnSync>, label: string): void {
   const status = result.status ?? 1;
@@ -30,7 +35,7 @@ function encodeTestPartial(outPath: string, size: `${number}x${number}`, label: 
       "-f",
       "lavfi",
       "-i",
-      "anullsrc=r=48000:cl=stereo",
+      "aevalsrc='0.2*sin(2*PI*440*t)|0.2*sin(2*PI*440*t)':sample_rate=48000",
       "-shortest",
       "-t",
       "1",
@@ -145,5 +150,15 @@ describe("concatPartials / validatePartials", () => {
     assertFfmpegOk(warnProbe, "ffmpeg replay final");
     const log = warnProbe.stderr.toLowerCase();
     expect(log).not.toMatch(/non-monotonic dts|invalid timestamps|dts < 0/);
+
+    const normPath = join(buildOut, "output", "final_normalized.mp4");
+    await normalizeFinalWithLoudnorm({
+      finalPathAbs: finalPath,
+      outputPathAbs: normPath,
+      loudnorm: DEFAULT_RENDER.loudnorm,
+    });
+    expect(existsSync(normPath)).toBe(true);
+    const lufs = probeIntegratedLoudnessLufs(normPath, DEFAULT_RENDER.loudnorm);
+    expect(Math.abs(lufs - DEFAULT_RENDER.loudnorm.i)).toBeLessThanOrEqual(0.5);
   });
 });

@@ -253,6 +253,18 @@
 - 备选方案：改写 `fetchScriptJson` 自动加 `public/` — 行为因入口而异，难测。
 - 影响范围：`VideoComposition` 默认 prop、Studio demo。
 
+### 2026-05-01 21:15 | T6.5
+- 模糊点：ffmpeg `loudnorm` 首遍 `print_format=json` 输出字段为 `input_i` / `target_offset`，与 TASKS 示例中的 `measured_*` / `offset` 命名不一致。
+- 选择方案：解析 `input_*` + `target_offset`，第二遍 filter 仍按文档传入 `measured_I=...` 等（与 ffmpeg 过滤器参数名一致）。
+- 备选方案：假定 stderr 含 `measured_I` — 本机 ffmpeg 6.1 无此键，第二遍会失败。
+- 影响范围：`src/render/loudnorm.ts`。
+
+### 2026-05-01 21:18 | T6.5
+- 模糊点：静音或近静音导致首遍 JSON 出现 `input_i:-inf`、`target_offset:inf`，第二遍 `measured_I=-inf` 报错。
+- 选择方案：`parseLoudnormMeasureJson` 遇 `inf`（忽略大小写）即抛错；单测 concat 用 `aevalsrc` 立体声正弦替代 `anullsrc`；集成测在 build 目录写入 4s sine WAV 并刷新 `durationSec`/`lineTimings`。
+- 备选方案：loudnorm 失败时降级为 copy — 违背 PRD「错误显式」。
+- 影响范围：`tests/concat.test.ts`、`tests/render-blocks.integration.test.ts`。
+
 ### 2026-05-01 20:48 | T6.4
 - 模糊点：TASKS 写「抽样」校验；ffprobe JSON 已覆盖首段流元数据，未逐帧扫 GOP。
 - 选择方案：每文件一次 `ffprobe -show_entries stream=... -of json`，比对视频 codec/分辨率/pix_fmt/avg_frame_rate/SAR/profile/level 与音频 codec/sample_rate/channels/layout；与 PRD §10「codec/分辨率/fps/像素格式/SAR」一致，并排除「一轨有音一轨无音」的 concat 坑。
