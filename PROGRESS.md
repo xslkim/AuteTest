@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T2.2`
-- **last_updated**: `2026-05-01T23:45:00Z`
-- **next_action**: `开始 T2.2 — cache CLI`
+- **last_updated**: `2026-05-02T00:15:00Z`
+- **next_action**: `实现 cache stats/clean 并验收`
 - **completed**: `9 / 35`
 - **blockers**: `0`
 
@@ -38,7 +38,7 @@
 | T1.4 | 资产 hash 复制 | done | 2026-05-01T20:00:00Z | 2026-05-01T20:10:00Z | 3eeb9a8 | — |
 | T1.5 | compile 命令组装 | done | 2026-05-01T21:15:00Z | 2026-05-01T22:20:00Z | 7db4e67 | — |
 | T2.1 | 缓存 store | done | 2026-05-01T23:05:00Z | 2026-05-01T23:45:00Z | 3026706 | `evictIfOverLimit({ triggerStageStart })` 对接 §11.4 compile 不触发 |
-| T2.2 | cache CLI | pending | — | — | — | — |
+| T2.2 | cache CLI | in_progress | 2026-05-02T00:15:00Z | — | — | — |
 | T3.1 | VoxCPM FastAPI wrapper | pending | — | — | — | — |
 | T3.2 | voxcpm-client + autoStart | pending | — | — | — | — |
 | T3.3 | ffmpeg helpers | pending | — | — | — | — |
