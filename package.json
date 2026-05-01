@@ -8,7 +8,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "export-schema": "tsx scripts/export-script-schema.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
@@ -27,8 +29,11 @@
     "@types/ms": "^0.7.34",
     "@types/node": "^20.0.0",
     "@types/proper-lockfile": "^4.1.4",
+    "@types/react": "^19.2.14",
+    "ajv": "^8.20.0",
     "tsx": "^4.0.0",
     "typescript": "^5.4.0",
-    "vitest": "^1.0.0"
+    "vitest": "^1.0.0",
+    "zod-to-json-schema": "^3.25.2"
   }
 }
