@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T6.7`
-- **last_updated**: `2026-05-01T23:50:00Z`
-- **next_action**: `实现 render CLI：校验 → timing → partials → concat → loudnorm → QA → 写 script.json`
-- **completed**: `30 / 35`
+- **active_task**: `T7.1`
+- **last_updated**: `2026-05-01T23:58:00Z`
+- **next_action**: `开始 T7.1 — Root.tsx 生成器（preview 模式）`
+- **completed**: `31 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -59,7 +59,7 @@
 | T6.4 | ffmpeg concat | done | 2026-05-01T20:15:00Z | 2026-05-01T20:50:00Z | ca08086 | `validatePartials` 含音轨布局；`partial` 须在 `output/` 下供 concat 列表 |
 | T6.5 | loudnorm two-pass | done | 2026-05-01T21:05:00Z | 2026-05-01T21:25:00Z | fac3410 | `twoPass:false` 为 copy；`inf` 测量显式报错 |
 | T6.6 | 质量校验 | done | 2026-05-01T22:00:00Z | 2026-05-01T22:30:00Z | 779356a | `validateFinalNormalizedVideo`：Σ`timing.frames`/fps ±1 帧、5 段内等距抽样 |
-| T6.7 | render 命令组装 | in_progress | 2026-05-01T23:50:00Z | — | — | — |
+| T6.7 | render 命令组装 | done | 2026-05-01T23:50:00Z | 2026-05-01T23:58:00Z | 7e33deb | `renderInputSchema` 允许块上可选 `timing`/`render` 以便已完成一轮的 script.json 再次 `render` |
 | T7.1 | Root.tsx 生成器（preview 模式） | pending | — | — | — | — |
 | T7.2 | preview 命令 | pending | — | — | — | — |
 | T8.1 | build orchestrator | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T6.7 — render 命令组装 @ 7e33deb
+- acceptance: mock E2E → `output/final_normalized.mp4`；`--block B01 --force` 仅 1 次 `renderMedia` 且 B02 partial mtime 不变 → ✓；`npm run build` + `npm run test` → ✓
+- artifacts: `src/cli/render.ts` / `bin/autovideo.ts` / `src/render/render-blocks.ts`（`renderOnlyBlockIds` + `forcePartialAll`/`forcePartialBlockIds`）/ `src/types/script.ts`（`assertRenderInputScript`）/ `tests/render-cli.test.ts`
+- 备注：`renderBlockPartials` 在 `--block` 时对未列出的块复用磁盘 partial；主进程先 `applyTimingsToBlocks` 再写 `script.json`，结束时刷新 `render` 与 `artifacts.renderedAt`
 
 ### T6.6 — 质量校验 @ 779356a
 - acceptance: `final_normalized` 分辨率 / 时长 vs Σ partial（±1 帧）/ 黑帧 mp4 → QA 失败 → ✓；`npm run build` + `npm run test` → ✓
@@ -244,6 +249,12 @@
 > - 选择方案：<采纳的实现>
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
+
+### 2026-05-01 23:55 | T6.7
+- 模糊点：TASKS 写入口校验 `RenderInputScript`「timing 尚未计算」；完成后磁盘 script 含 `timing`/`render`，再次运行 `render`（增量）必须仍能解析。
+- 选择方案：`renderInputScriptSchema` 在块级允许可选 `timing`、`render`（与 compile 块 schema 的 `.strict()` 分离）；运行时仍先统一 `applyTimingsToBlocks` 覆盖计算结果。
+- 备选方案：第二次运行前手工删字段 — 违背「可重跑」心智。
+- 影响范围：`src/types/script.ts`、`runRenderCommand` 读盘契约。
 
 ### 2026-05-01 18:30 | T6.3
 - 模糊点：示例与旧文档写 `calculateMetadata({ inputProps })`；Remotion 4 `resolveVideoConfig` 向 `calculateMetadata` 传 `props`（字段名为 `props`）。
