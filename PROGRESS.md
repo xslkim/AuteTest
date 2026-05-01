@@ -7,9 +7,9 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T0.3`
-- **last_updated**: `2026-05-01T12:45:00Z`
-- **next_action**: `开始 T0.3 — 配置 loader`
-- **completed**: `2 / 35`
+- **last_updated**: `2026-05-01T14:43:30Z`
+- **next_action**: `开始 T1.1 — 项目文件 + meta 解析`
+- **completed**: `3 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -31,7 +31,7 @@
 |----|------|------|------|------|--------|------|
 | T0.1 | 仓库骨架 | done | 2026-05-01T09:26:26Z | 2026-05-01T09:28:36Z | aa66616 | — |
 | T0.2 | 类型定义 + Schema | done | 2026-05-01T12:00:00Z | 2026-05-01T12:45:00Z | f6fc71d | — |
-| T0.3 | 配置 loader | pending | — | — | — | — |
+| T0.3 | 配置 loader | done | 2026-05-01T14:10:00Z | 2026-05-01T14:43:30Z | f96724c | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
 | T1.2 | 块解析 + directive | pending | — | — | — | — |
 | T1.3 | 旁白预处理 | pending | — | — | — | — |
@@ -85,6 +85,11 @@
 - acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
 - artifacts: `package.json` / `package-lock.json` / `tsconfig.json` / `remotion.config.ts` / `bin/autovideo.ts` / `.gitignore`
 - 备注：环境经 apt 安装 `nodejs`/`npm` 后完成验收；`@remotion/cli` 见决策日志 T0.1。
+
+### T0.3 — 配置 loader @ f96724c
+- acceptance: `--meta dotted.key` 报错 → ✓（单测）；`--meta title=foo` / `fps=30` 类型推断 → ✓；合并优先级（defaults < cwd `autovideo.config.json` < `--config`，且 `--cache-dir` 高于文件）→ ✓；`npm run test` + `tsc --noEmit` → ✓
+- artifacts: `src/config/types.ts` / `src/config/defaults.ts` / `src/config/load.ts` / `tests/config-loader.test.ts`
+- 备注：`META_CLI_KEYS` 与 PRD §3.4 顶层字段对齐（不含 slug；slug 仅在 meta.md 书写覆盖 `--out` 自动 slug）。
 
 ### T0.2 — 类型定义 + Schema @ f6fc71d
 - acceptance: `tsc --noEmit` 零错误 → ✓；最小 `tests/fixtures/minimal-script.json` 经 Ajv 对照 `schemas/script.schema.json` 校验通过 → ✓；`assertCompiledScript({})` 抛错 → ✓（vitest）
