@@ -97,6 +97,12 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
+### 2026-05-01 12:30 | T0.1
+- 模糊点：`TASKS.md` / 旧版 `PRD.md` 要求 `Config.setKeyframeInterval(1)`；已安装的 Remotion v4 `@remotion/cli` 的 `Config` 类型中不存在该方法。
+- 选择方案：使用 `Config.overrideFfmpegCommand`，在 `pre-stitcher` 与 `stitcher` 两条 FFmpeg 命令里于 `-c:v libx264` 之后插入 `-g 1 -keyint_min 1`，等价于 GOP 长度为 1、段首 IDR，满足 §6.4 流复制 concat 前提。
+- 备选方案：不设置关键帧间隔（依赖编码器默认 GOP）— 未采纳，存在 concat 首帧异常风险。
+- 影响范围：仅 `remotion.config.ts` 与文档（`PRD.md` §6.4、`TASKS.md` T0.1）；后续 render 阶段行为与设计一致。
+
 （开发中由 agent 追加）
 
 ---
@@ -130,5 +136,11 @@
 > - 实际实现：<...>
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
+
+### T0.1 | PRD §6.4 step 6（GOP/IDR） | `setKeyframeInterval` 在 Remotion v4 中不存在
+- PRD 原描述（修订前）：`remotion.config.ts` 使用 `Config.setKeyframeInterval(1)`。
+- 实际实现：`Config.overrideFfmpegCommand` 为 `libx264` 注入 `-g 1 -keyint_min 1`。
+- 原因：Remotion v4 `@remotion/cli` 已移除 `setKeyframeInterval` API。
+- PRD 是否同步更新：是（见本任务文档修订）
 
 （开发中由 agent 追加）
