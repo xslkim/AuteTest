@@ -30,4 +30,5 @@ if [[ -f "$ROOT/github.txt" ]]; then
   fi
 fi
 
-exec python3 "$ROOT/auto_dev.py" "$@"
+export PYTHONUNBUFFERED=1
+exec python3 -u "$ROOT/auto_dev.py" "$@"
