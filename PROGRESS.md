@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T6.4`
-- **last_updated**: `2026-05-01T20:50:00Z`
-- **next_action**: `开始 T6.5 — loudnorm two-pass`
-- **completed**: `28 / 35`
+- **active_task**: `T6.6`
+- **last_updated**: `2026-05-01T21:25:00Z`
+- **next_action**: `开始 T6.6 — 质量校验`
+- **completed**: `29 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -57,7 +57,7 @@
 | T6.2 | timing 计算 | done | 2026-05-01T14:00:00Z | 2026-05-01T14:35:00Z | 8b7899b | `computeBlockTiming` / `applyTimingsToBlocks`；帧数与 `VideoComposition` fallback 对齐 |
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | done | 2026-05-01T16:00:00Z | 2026-05-01T18:25:00Z | b3191ea | 集成测 `RUN_RENDER_PARTIAL_INTEGRATION=1` |
 | T6.4 | ffmpeg concat | done | 2026-05-01T20:15:00Z | 2026-05-01T20:50:00Z | ca08086 | `validatePartials` 含音轨布局；`partial` 须在 `output/` 下供 concat 列表 |
-| T6.5 | loudnorm two-pass | pending | — | — | — | — |
+| T6.5 | loudnorm two-pass | done | 2026-05-01T21:05:00Z | 2026-05-01T21:25:00Z | fac3410 | `twoPass:false` 为 copy；`inf` 测量显式报错 |
 | T6.6 | 质量校验 | pending | — | — | — | — |
 | T6.7 | render 命令组装 | pending | — | — | — | — |
 | T7.1 | Root.tsx 生成器（preview 模式） | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T6.5 — loudnorm two-pass @ fac3410
+- acceptance: 两遍 loudnorm + `final_normalized` 集成测 integrated loudness −16 ± 0.5 LUFS → ✓（`RUN_RENDER_PARTIAL_INTEGRATION=1`）；`npm run build` + `npm run test` → ✓
+- artifacts: `src/render/loudnorm.ts` / `tests/loudnorm.test.ts` / `tests/concat.test.ts`（concatfixture 非静音音轨 + loudnorm 断言）/ `tests/render-blocks.integration.test.ts`（sine WAV + LUFS 断言）
+- 备注：首遍 stderr JSON 字段为 `input_*`/`target_offset`，映射到第二遍 `measured_*`/`offset`
 
 ### T6.4 — ffmpeg concat @ ca08086
 - acceptance: 2 块 partial → `concat.txt` + `final.mp4`，ffmpeg 回放无 PTS/monotonic DTS 类告警 → ✓（单测 ffmpeg fixture + 集成：`RUN_RENDER_PARTIAL_INTEGRATION=1`）；`npm run build` + `npm run test` → ✓
@@ -252,6 +257,18 @@
 - 选择方案：`DEFAULT_SCRIPT_PUBLIC_PATH = "public/script.json"`；Studio fixture 显式 `scriptPublicPath="script.json"`（其 base 与仓库 `public/` 一致）。
 - 备选方案：改写 `fetchScriptJson` 自动加 `public/` — 行为因入口而异，难测。
 - 影响范围：`VideoComposition` 默认 prop、Studio demo。
+
+### 2026-05-01 21:15 | T6.5
+- 模糊点：ffmpeg `loudnorm` 首遍 `print_format=json` 输出字段为 `input_i` / `target_offset`，与 TASKS 示例中的 `measured_*` / `offset` 命名不一致。
+- 选择方案：解析 `input_*` + `target_offset`，第二遍 filter 仍按文档传入 `measured_I=...` 等（与 ffmpeg 过滤器参数名一致）。
+- 备选方案：假定 stderr 含 `measured_I` — 本机 ffmpeg 6.1 无此键，第二遍会失败。
+- 影响范围：`src/render/loudnorm.ts`。
+
+### 2026-05-01 21:18 | T6.5
+- 模糊点：静音或近静音导致首遍 JSON 出现 `input_i:-inf`、`target_offset:inf`，第二遍 `measured_I=-inf` 报错。
+- 选择方案：`parseLoudnormMeasureJson` 遇 `inf`（忽略大小写）即抛错；单测 concat 用 `aevalsrc` 立体声正弦替代 `anullsrc`；集成测在 build 目录写入 4s sine WAV 并刷新 `durationSec`/`lineTimings`。
+- 备选方案：loudnorm 失败时降级为 copy — 违背 PRD「错误显式」。
+- 影响范围：`tests/concat.test.ts`、`tests/render-blocks.integration.test.ts`。
 
 ### 2026-05-01 20:48 | T6.4
 - 模糊点：TASKS 写「抽样」校验；ffprobe JSON 已覆盖首段流元数据，未逐帧扫 GOP。
