@@ -6,9 +6,9 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `—`
-- **last_updated**: `2026-05-01T11:20:00Z`
-- **next_action**: `从 T0.1 开始`
+- **active_task**: `T0.1`
+- **last_updated**: `2026-05-01T12:00:00Z`
+- **next_action**: `实现 package.json / tsconfig / remotion.config / bin CLI stub`
 - **completed**: `0 / 35`
 - **blockers**: `0`
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | pending | — | — | — | — |
+| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:00:00Z | — | — | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -97,7 +97,11 @@
 > - 备选方案：<未采纳的方案及原因>
 > - 影响范围：<是否影响其他任务>
 
-（开发中由 agent 追加）
+### 2026-05-01 12:00 | T0.1
+- 模糊点：PRD §13.1 仅列出 `@remotion/bundler` / `@remotion/renderer` / `remotion`，未列出 `@remotion/cli`；Remotion 4 文档要求 `remotion.config.ts` 从 `@remotion/cli/config` 导入 `Config`。
+- 选择方案：在 `package.json` 增加 `@remotion/cli`（版本与 Remotion 4 对齐 `^4.0.0`），供 `remotion.config.ts` 使用。
+- 备选方案：从 `remotion` 旧路径导入 — 4.0 已迁移，不可用。
+- 影响范围：仅依赖声明；后续 Remotion CLI 子命令也可共用。
 
 ---
 
