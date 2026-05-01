@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T4.2`
-- **last_updated**: `2026-05-01T17:55:00Z`
-- **next_action**: `开始 T4.2 — Claude SDK 调用 + prompt cache`
+- **last_updated**: `2026-05-01T18:15:00Z`
+- **next_action**: `实现 component-gen.ts + 单测；完成后 chore(done)`
 - **completed**: `16 / 35`
 - **blockers**: `0`
 
@@ -45,7 +45,7 @@
 | T3.4 | lineTimings 计算 | done | 2026-05-01T14:05:00Z | 2026-05-01T14:12:00Z | cad58d4 | 第 1 行 `startMs=0`，与 §6.2.3 公式一致 |
 | T3.5 | tts 命令组装 | done | 2026-05-01T15:30:00Z | 2026-05-01T16:05:00Z | f05ac08 | 入口用宽松 schema + `voiceRef` 存在性 |
 | T4.1 | prompt + 组件骨架 | done | 2026-05-01T17:30:00Z | 2026-05-01T17:55:00Z | 59bb212 | `prompt-version.ts` 与 cache CLI 共用 MD5 前缀 |
-| T4.2 | Claude SDK 调用 + prompt cache | pending | — | — | — | — |
+| T4.2 | Claude SDK 调用 + prompt cache | in_progress | 2026-05-01T18:15:00Z | — | — | — |
 | T4.3 | 子进程隔离工具 | pending | — | — | — | — |
 | T4.4 | 验证（tsc + render smoke） | pending | — | — | — | — |
 | T4.5 | visuals 命令组装 | pending | — | — | — | — |
