@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T4.2`
-- **last_updated**: `2026-05-01T18:15:00Z`
-- **next_action**: `实现 component-gen.ts + 单测；完成后 chore(done)`
-- **completed**: `16 / 35`
+- **active_task**: `T4.3`
+- **last_updated**: `2026-05-01T19:05:00Z`
+- **next_action**: `开始 T4.3 — 子进程隔离工具`
+- **completed**: `17 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -45,7 +45,7 @@
 | T3.4 | lineTimings 计算 | done | 2026-05-01T14:05:00Z | 2026-05-01T14:12:00Z | cad58d4 | 第 1 行 `startMs=0`，与 §6.2.3 公式一致 |
 | T3.5 | tts 命令组装 | done | 2026-05-01T15:30:00Z | 2026-05-01T16:05:00Z | f05ac08 | 入口用宽松 schema + `voiceRef` 存在性 |
 | T4.1 | prompt + 组件骨架 | done | 2026-05-01T17:30:00Z | 2026-05-01T17:55:00Z | 59bb212 | `prompt-version.ts` 与 cache CLI 共用 MD5 前缀 |
-| T4.2 | Claude SDK 调用 + prompt cache | in_progress | 2026-05-01T18:15:00Z | — | — | — |
+| T4.2 | Claude SDK 调用 + prompt cache | done | 2026-05-01T18:15:00Z | 2026-05-01T19:05:00Z | 2d258b0 | `beta.messages` + `prompt-caching-2024-07-31`；集成测需 `ANTHROPIC_API_KEY` |
 | T4.3 | 子进程隔离工具 | pending | — | — | — | — |
 | T4.4 | 验证（tsc + render smoke） | pending | — | — | — | — |
 | T4.5 | visuals 命令组装 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T4.2 — Claude SDK 调用 + prompt cache @ 2d258b0
+- acceptance: 单测 mock：`system`/`tools` 含 `cache_control: ephemeral`、`render_component` + `tool_choice` → ✓；`cache_read_input_tokens > 0` → `cacheHit` → ✓；可选集成：`ANTHROPIC_API_KEY` 时 `component-gen.integration` 非跳过 → 本 CI 无 key 为 skip；`npm run test` + `npm run build` → ✓
+- artifacts: `src/ai/component-gen.ts` / `tests/component-gen.test.ts` / `tests/component-gen.integration.test.ts`
+- 备注：`maxRetries` 取自 `anthropic.maxRetries`；`promptCaching: false` 时降级为普通 string system（无 beta betas）
 
 ### T4.1 — prompt + 组件骨架 @ 59bb212
 - acceptance: `src/ai/prompts/component.md` 存在且含 AnimationProps/Theme/白名单/`{tsx}` 约定；`docs/ARCHITECTURE.md` 含「Visuals prompt」设计与样例 → ✓；`component.md` 字节 MD5 多次计算一致、`prompt-version` 单测通过 → ✓；`npm run test` + `npm run build` → ✓
@@ -240,6 +245,12 @@
 - 选择方案：`CleanCacheOptions` 中各条件按 AND 收敛；仅当 `type`/`olderThanMs`/`stale` 全部满足（已指定的项）时删除。
 - 备选方案：OR — 易删掉仍应保留的条目。
 - 影响范围：`CacheStore.clean`；T2.2 CLI 应保持一致。
+
+### 2026-05-01 19:10 | T4.2
+- 模糊点：TASKS 固定「system prompt 标 ephemeral」；PRD §9 另有 `anthropic.promptCaching` 开关。
+- 选择方案：默认 `promptCaching: true` 时走 `anthropic.beta.messages.create`，`betas: ["prompt-caching-2024-07-31"]`，并对 system 文本块与 `render_component` 工具附加 `cache_control: {type:"ephemeral"}`；`false` 时同一调用路径但省略 betas 与 `cache_control`，仍强制 `tool_choice: render_component`。
+- 备选方案：忽略 `promptCaching` 始终开缓存 — 与用户显式关闭不符。
+- 影响范围：`generateComponentTsx`；单测覆盖默认缓存路径。
 
 ### 2026-05-01 10:50 | T3.5
 - 模糊点：PRD §6.2 写 tts 入口为已 compile 的 `script.json`，而现有 `compiledScriptSchema` 为 `.strict()` 且禁止块上 `audio` 键，与「再次运行 tts」冲突。
