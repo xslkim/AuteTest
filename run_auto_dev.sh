@@ -28,6 +28,10 @@ if [[ -f "$ROOT/github.txt" ]]; then
   if [[ -n "${TOKEN}" ]] && git rev-parse --git-dir >/dev/null 2>&1; then
     git -C "$ROOT" pull --quiet "https://oauth2:${TOKEN}@github.com/xslkim/AuteTest.git" main 2>/dev/null || true
   fi
+  # 导出 GITHUB_TOKEN 供 auto_dev.py 内的 merge_agent_branch_to_main 使用
+  if [[ -n "${TOKEN}" ]]; then
+    export GITHUB_TOKEN="${TOKEN}"
+  fi
 fi
 
 export PYTHONUNBUFFERED=1

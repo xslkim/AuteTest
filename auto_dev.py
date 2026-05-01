@@ -638,7 +638,7 @@ def call_claude_agent(
         if response.stop_reason == "end_turn" and not tool_calls:
             break
 
-    # 最终再检查一次
+    # 最终再检查一次（Claude 模式下不需要 exclude_hashes，Agent 在本机执行不会有旧分支问题）
     return check_task_done_in_git(task.id)
 
 
@@ -674,10 +674,11 @@ def refresh_local_from_origin_main() -> None:
         )
 
 
-def check_task_done_in_git(task_id: str) -> bool:
+def snapshot_done_commit_hashes(task_id: str) -> set[str]:
     """
-    检查是否存在 chore(Tx.y): done 的 commit。
-    云端 Agent 推送到 GitHub 后先 git fetch，并在所有已 fetch 的分支历史上搜索（含 origin/cursor-*）。
+    快照当前所有分支上已存在的 chore(Tx.y): done commit hash 集合。
+    在调用 Agent 之前调用，用于后续 check_task_done_in_git 排除旧提交，
+    避免因历史 cursor/* 分支残留而误判为"已完成"。
     """
     env = {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
     subprocess.run(
@@ -688,7 +689,7 @@ def check_task_done_in_git(task_id: str) -> bool:
         env=env,
     )
     result = subprocess.run(
-        ["git", "log", "--oneline", "-250", "--all"],
+        ["git", "log", "--format=%H %s", "--all"],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
@@ -696,7 +697,155 @@ def check_task_done_in_git(task_id: str) -> bool:
         env=env,
     )
     pattern = rf"chore\({re.escape(task_id)}\):\s*done"
-    return bool(re.search(pattern, result.stdout, re.IGNORECASE))
+    hashes: set[str] = set()
+    for line in result.stdout.splitlines():
+        parts = line.split(" ", 1)
+        if len(parts) == 2 and re.search(pattern, parts[1], re.IGNORECASE):
+            hashes.add(parts[0])
+    return hashes
+
+
+def check_task_done_in_git(task_id: str, exclude_hashes: Optional[set] = None) -> bool:
+    """
+    检查是否存在新的 chore(Tx.y): done commit。
+    - exclude_hashes：Agent 启动前已存在的 done commit hash 集合，排除后避免旧分支误判。
+    - 在所有已 fetch 的分支历史上搜索（含 origin/cursor-*）。
+    """
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+    subprocess.run(
+        ["git", "fetch", "origin", "--prune"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        timeout=120,
+        env=env,
+    )
+    result = subprocess.run(
+        ["git", "log", "--format=%H %s", "-500", "--all"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+        env=env,
+    )
+    pattern = rf"chore\({re.escape(task_id)}\):\s*done"
+    for line in result.stdout.splitlines():
+        parts = line.split(" ", 1)
+        if len(parts) == 2:
+            hash_, subject = parts
+            if re.search(pattern, subject, re.IGNORECASE):
+                if exclude_hashes is None or hash_ not in exclude_hashes:
+                    return True
+    return False
+
+
+def find_done_commit_hash(task_id: str, exclude_hashes: set) -> Optional[str]:
+    """找到 Agent 新提交的 chore(Tx.y): done commit hash"""
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+    result = subprocess.run(
+        ["git", "log", "--format=%H %s", "-500", "--all"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+        env=env,
+    )
+    pattern = rf"chore\({re.escape(task_id)}\):\s*done"
+    for line in result.stdout.splitlines():
+        parts = line.split(" ", 1)
+        if len(parts) == 2:
+            hash_, subject = parts
+            if re.search(pattern, subject, re.IGNORECASE) and hash_ not in exclude_hashes:
+                return hash_
+    return None
+
+
+def merge_agent_branch_to_main(task_id: str, exclude_hashes: set) -> bool:
+    """
+    找到 Agent 提交的 cursor/* 分支（含新 done commit），merge 到本地 main，再 push 到 GitHub。
+    这样 PROGRESS.md 的更新才能进入 main，供下一任务的 parse_progress() 读取到。
+    返回 True 表示合并并推送成功。
+    """
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+
+    done_hash = find_done_commit_hash(task_id, exclude_hashes)
+    if not done_hash:
+        print(c(YELLOW, f"  [merge] 未找到新的 done commit hash，跳过合并"))
+        return False
+
+    # 找到包含该 commit 的 cursor/* 远程分支
+    r = subprocess.run(
+        ["git", "branch", "-r", "--contains", done_hash],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        env=env,
+    )
+    cursor_branches = [b.strip() for b in r.stdout.splitlines() if "cursor/" in b]
+    merge_ref = cursor_branches[0] if cursor_branches else done_hash
+    print(c(CYAN, f"  [merge] 将 {merge_ref} 合并到 main（done commit: {done_hash[:10]}…）"))
+
+    # 确保本地 main 是最新的
+    subprocess.run(
+        ["git", "fetch", "origin", "main"],
+        cwd=REPO_ROOT, capture_output=True, timeout=60, env=env,
+    )
+    subprocess.run(
+        ["git", "checkout", "main"],
+        cwd=REPO_ROOT, capture_output=True, timeout=30, env=env,
+    )
+    subprocess.run(
+        ["git", "merge", "--ff-only", "origin/main"],
+        cwd=REPO_ROOT, capture_output=True, timeout=30, env=env,
+    )
+
+    # merge agent 分支（--no-ff 保留历史，允许 main 与 cursor/* 有分叉）
+    r = subprocess.run(
+        ["git", "merge", "--no-ff", merge_ref,
+         "-m", f"merge(cursor): {task_id} agent work → main"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        env=env,
+    )
+    if r.returncode != 0:
+        print(c(YELLOW, f"  [merge] 分支 merge 失败（{r.stderr[:200]}），尝试 cherry-pick done commit…"))
+        # fallback：只 cherry-pick done commit 本身
+        r2 = subprocess.run(
+            ["git", "cherry-pick", done_hash],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=60, env=env,
+        )
+        if r2.returncode != 0:
+            print(c(RED, f"  [merge] cherry-pick 也失败：{r2.stderr[:200]}"))
+            subprocess.run(["git", "cherry-pick", "--abort"],
+                           cwd=REPO_ROOT, capture_output=True, timeout=30, env=env)
+            return False
+
+    # push main 到 GitHub（使用 GITHUB_TOKEN 或裸 push）
+    token = os.environ.get("GITHUB_TOKEN", "")
+    github_repo = os.environ.get("CURSOR_GITHUB_REPO", "")
+    if token and github_repo:
+        import urllib.parse
+        parsed = urllib.parse.urlparse(github_repo)
+        push_url = f"https://oauth2:{token}@{parsed.netloc}{parsed.path}"
+    else:
+        push_url = "origin"
+
+    r = subprocess.run(
+        ["git", "push", push_url, "main"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        env=env,
+    )
+    if r.returncode != 0:
+        print(c(YELLOW, f"  [merge] push 失败：{(r.stderr or r.stdout)[:200]}"))
+        return False
+
+    print(c(GREEN, f"  [merge] ✓ {task_id} agent 分支已合并并推送到 main"))
+    return True
 
 
 def wait_for_cursor_agent_done(
@@ -704,21 +853,28 @@ def wait_for_cursor_agent_done(
     task: TaskState,
     poll_interval: int,
     timeout: int,
+    exclude_hashes: Optional[set] = None,
 ) -> bool:
     """
-    轮询 Cursor agent 状态，同时检测 git log。
+    轮询 Cursor agent 状态，同时检测 git log（排除 exclude_hashes 里的旧提交）。
+    检测到完成后自动把 agent 的 cursor/* 分支合并回 main 并推送。
     返回 True 表示任务完成。
     """
     start = time.time()
     print(c(CYAN, f"\n[轮询] Cursor agent ID: {agent_id}"))
 
+    def _confirm_done() -> bool:
+        if check_task_done_in_git(task.id, exclude_hashes):
+            print(c(GREEN, f"\n✅ 任务 {task.id} 已通过 git 确认完成"))
+            merge_agent_branch_to_main(task.id, exclude_hashes or set())
+            return True
+        return False
+
     while time.time() - start < timeout:
         elapsed = int(time.time() - start)
         print(f"  [{elapsed}s] 检查状态...", end="\r")
 
-        # 优先检查 git（云端 push 后需 fetch 才能在本仓库看到）
-        if check_task_done_in_git(task.id):
-            print(c(GREEN, f"\n✅ 任务 {task.id} 已通过 git 确认完成"))
+        if _confirm_done():
             return True
 
         # Cursor Cloud：执行状态在 Run 对象上（FINISHED / ERROR / …）
@@ -729,8 +885,7 @@ def wait_for_cursor_agent_done(
                 # 等待远端镜像与 GitHub 传播后再确认 chore(): done
                 for _ in range(12):
                     time.sleep(5)
-                    if check_task_done_in_git(task.id):
-                        print(c(GREEN, f"\n✅ 任务 {task.id} 已通过 git 确认完成"))
+                    if _confirm_done():
                         return True
                 print(
                     c(
@@ -958,6 +1113,11 @@ def main() -> None:
                     print(c(CYAN, f"GitHub startingRef: {disp}"))
                 else:
                     print(c(CYAN, "GitHub startingRef: （省略，由 Cursor 解析默认分支）"))
+                # 快照：记录 Agent 启动前已存在的 done commit，防止旧分支误判
+                baseline_hashes = snapshot_done_commit_hashes(task.id)
+                if baseline_hashes:
+                    print(c(YELLOW, f"  [基线] 发现 {len(baseline_hashes)} 个历史 done commit，将排除误判"))
+
                 agent_id = call_cursor_agent(
                     task,
                     prompt,
@@ -967,7 +1127,8 @@ def main() -> None:
                 )
                 print(c(CYAN, f"[Cursor Agent] Agent ID: {agent_id}"))
                 success = wait_for_cursor_agent_done(
-                    agent_id, task, args.poll_interval, args.timeout
+                    agent_id, task, args.poll_interval, args.timeout,
+                    exclude_hashes=baseline_hashes,
                 )
             except RuntimeError as e:
                 err_txt = str(e).lower()
