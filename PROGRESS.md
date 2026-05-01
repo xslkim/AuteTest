@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T1.5`
-- **last_updated**: `2026-05-01T21:15:00Z`
-- **next_action**: `实现 src/cli/compile.ts、slugify、快照与 CLI 接线`
-- **completed**: `7 / 35`
+- **active_task**: `T2.1`
+- **last_updated**: `2026-05-01T22:20:00Z`
+- **next_action**: `开始 T2.1 — 缓存 store`
+- **completed**: `8 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -36,7 +36,7 @@
 | T1.2 | 块解析 + directive | done | 2026-05-01T09:49:11Z | 2026-05-01T09:52:02Z | 820b0e9 | — |
 | T1.3 | 旁白预处理 | done | 2026-05-01T18:30:00Z | 2026-05-01T19:05:00Z | 991a46f | — |
 | T1.4 | 资产 hash 复制 | done | 2026-05-01T20:00:00Z | 2026-05-01T20:10:00Z | 3eeb9a8 | — |
-| T1.5 | compile 命令组装 | in_progress | 2026-05-01T21:15:00Z | — | — | — |
+| T1.5 | compile 命令组装 | done | 2026-05-01T21:15:00Z | 2026-05-01T22:20:00Z | 7db4e67 | — |
 | T2.1 | 缓存 store | pending | — | — | — | — |
 | T2.2 | cache CLI | pending | — | — | — | — |
 | T3.1 | VoxCPM FastAPI wrapper | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T1.5 — compile 命令组装 @ 7db4e67
+- acceptance: pipeline 串接 → ✓；`subtitleSafeBottom = floor(height*0.15)` → ✓；Zod 校验 → ✓；`script.json` 与 `public/script.json` 同内容且含 `artifacts.compiledAt` → ✓；默认 `./build/{slug}/` + `slug:` + CJK slugify（pinyin-pro）→ ✓；快照（2 块+图）稳定 → ✓；`script-microgpt-part1-1` 风格 E2E fixture → ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/cli/compile.ts` / `src/util/slugify.ts` / `bin/autovideo.ts` / `tests/compile.test.ts` / `tests/fixtures/t15-project/` / `tests/__snapshots__/compile.test.ts.snap`
+- 备注：`compile`、`build` 子命令启用 `allowUnknownOption`，保证 `extractConfigFlags` 仍能扫描 `--meta`/`--config`/`--out`；`--dry-run` 在临时目录跑完整 assets 处理后删除、不写目标目录
 
 ### T1.4 — 资产 hash 复制 @ 3eeb9a8
 - acceptance: 同名不同目录 → 不同 manifest key → ✓；同文件多块引用 → assets 去重 → ✓；无「第 X-Y 行」代码引用 → 不内联，仅 hash 复制与路径替换 → ✓；`npm run test` + `npm run build` → ✓
@@ -159,6 +164,12 @@
 - 选择方案：按 TASKS 正则 greedily 取到最后一个点后的「尾段」作为扩展；`tar.gz` 会得到 `.gz`，与「单段扩展名」正则一致。
 - 备选方案：自研「多段扩展名」表 — TASKS 未要求，且与给定正则不完全一致。
 - 影响范围：仅 `processVisualAssets` 路径匹配语义；后续若放宽正则需同步测试。
+
+### 2026-05-01 22:10 | T1.5
+- 模糊点：PRD §6.1 步 7 称 `subtitleSafeBottom` 由 theme 字幕 token「推导」；TASKS T1.5 要求 `floor(height*0.15)`。
+- 选择方案：按 TASKS：`Math.floor(height * 0.15)`。
+- 备选方案：等 T5 theme 模块再推导 — TASKS 已指定公式，defer 会破坏本任务验收。
+- 影响范围：`parseMetaFile.subtitleSafeBottom`；默认分辨率下与此前 `Math.round` 数值一致。
 
 ### 2026-05-01 19:05 | T1.3
 - 模糊点：PRD §3.7 仅列举 `\*\*` 字面星号转义，未说明单个 `\*` 或其它反斜杠组合。
