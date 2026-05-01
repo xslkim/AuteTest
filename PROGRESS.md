@@ -6,9 +6,9 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T6.4`
-- **last_updated**: `2026-05-01T20:50:00Z`
-- **next_action**: `开始 T6.5 — loudnorm two-pass`
+- **active_task**: `T6.5`
+- **last_updated**: `2026-05-01T21:05:00Z`
+- **next_action**: `实现 src/render/loudnorm.ts + 集成验收`
 - **completed**: `28 / 35`
 - **blockers**: `0`
 
@@ -57,7 +57,7 @@
 | T6.2 | timing 计算 | done | 2026-05-01T14:00:00Z | 2026-05-01T14:35:00Z | 8b7899b | `computeBlockTiming` / `applyTimingsToBlocks`；帧数与 `VideoComposition` fallback 对齐 |
 | T6.3 | partial 渲染（程序化 bundle + renderMedia） | done | 2026-05-01T16:00:00Z | 2026-05-01T18:25:00Z | b3191ea | 集成测 `RUN_RENDER_PARTIAL_INTEGRATION=1` |
 | T6.4 | ffmpeg concat | done | 2026-05-01T20:15:00Z | 2026-05-01T20:50:00Z | ca08086 | `validatePartials` 含音轨布局；`partial` 须在 `output/` 下供 concat 列表 |
-| T6.5 | loudnorm two-pass | pending | — | — | — | — |
+| T6.5 | loudnorm two-pass | in_progress | 2026-05-01T21:05:00Z | — | — | — |
 | T6.6 | 质量校验 | pending | — | — | — | — |
 | T6.7 | render 命令组装 | pending | — | — | — | — |
 | T7.1 | Root.tsx 生成器（preview 模式） | pending | — | — | — | — |
