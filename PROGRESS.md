@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T1.4`
-- **last_updated**: `2026-05-01T20:00:00Z`
-- **next_action**: `实现 src/parser/assets.ts + 单测`
-- **completed**: `6 / 35`
+- **active_task**: `T1.5`
+- **last_updated**: `2026-05-01T20:10:00Z`
+- **next_action**: `开始 T1.5 — compile 命令组装`
+- **completed**: `7 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -35,7 +35,7 @@
 | T1.1 | 项目文件 + meta 解析 | done | 2026-05-01T16:00:00Z | 2026-05-01T17:50:00Z | e33ff88 | — |
 | T1.2 | 块解析 + directive | done | 2026-05-01T09:49:11Z | 2026-05-01T09:52:02Z | 820b0e9 | — |
 | T1.3 | 旁白预处理 | done | 2026-05-01T18:30:00Z | 2026-05-01T19:05:00Z | 991a46f | — |
-| T1.4 | 资产 hash 复制 | in_progress | 2026-05-01T20:00:00Z | — | — | — |
+| T1.4 | 资产 hash 复制 | done | 2026-05-01T20:00:00Z | 2026-05-01T20:10:00Z | 3eeb9a8 | — |
 | T1.5 | compile 命令组装 | pending | — | — | — | — |
 | T2.1 | 缓存 store | pending | — | — | — | — |
 | T2.2 | cache CLI | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T1.4 — 资产 hash 复制 @ 3eeb9a8
+- acceptance: 同名不同目录 → 不同 manifest key → ✓；同文件多块引用 → assets 去重 → ✓；无「第 X-Y 行」代码引用 → 不内联，仅 hash 复制与路径替换 → ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/parser/assets.ts` / `tests/assets.test.ts`
+- 备注：「第 X-Y 行」与紧随该路径 token 的文本段配对后再内联，避免多块引用时范围串台；代码块 fenced 语言由扩展名映射
 
 ### T0.1 — 仓库骨架 @ aa66616
 - acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
@@ -148,6 +153,12 @@
 - 选择方案：首个 `>>>` 之前若有非空行则报错，确保内容文件「只含块」、避免静默吞掉错别字段落。
 - 备选方案：忽略前言 — 易掩盖用户把说明写在错误位置。
 - 影响范围：仅 `extractRegionsFromFile`。
+
+### 2026-05-01 20:08 | T1.4
+- 模糊点：TASKS 要求检测 `(\.\.?/[^\s]+\.[a-zA-Z0-9]+)`，未定义多扩展名（如 `foo.tar.gz`）或路径含查询片段的边界。
+- 选择方案：按 TASKS 正则 greedily 取到最后一个点后的「尾段」作为扩展；`tar.gz` 会得到 `.gz`，与「单段扩展名」正则一致。
+- 备选方案：自研「多段扩展名」表 — TASKS 未要求，且与给定正则不完全一致。
+- 影响范围：仅 `processVisualAssets` 路径匹配语义；后续若放宽正则需同步测试。
 
 ### 2026-05-01 19:05 | T1.3
 - 模糊点：PRD §3.7 仅列举 `\*\*` 字面星号转义，未说明单个 `\*` 或其它反斜杠组合。
