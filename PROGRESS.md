@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T3.2`
-- **last_updated**: `2026-05-01T10:30:43Z`
-- **next_action**: `实现 voxcpm-client / voxcpm-server 并通过单测与集成测试`
-- **completed**: `11 / 35`
+- **active_task**: `T3.3`
+- **last_updated**: `2026-05-01T10:32:48Z`
+- **next_action**: `开始 T3.3 — ffmpeg helpers`
+- **completed**: `12 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -40,7 +40,7 @@
 | T2.1 | 缓存 store | done | 2026-05-01T23:05:00Z | 2026-05-01T23:45:00Z | 3026706 | `evictIfOverLimit({ triggerStageStart })` 对接 §11.4 compile 不触发 |
 | T2.2 | cache CLI | done | 2026-05-02T00:15:00Z | 2026-05-02T10:25:00Z | 0aa039a | `clean --dry-run`；子命令 `allowUnknownOption` 以兼容 `--cache-dir` 位置 |
 | T3.1 | VoxCPM FastAPI wrapper | done | 2026-05-02T12:00:00Z | 2026-05-02T12:50:00Z | 769b75b | — |
-| T3.2 | voxcpm-client + autoStart | in_progress | 2026-05-01T10:30:43Z | — | — | — |
+| T3.2 | voxcpm-client + autoStart | done | 2026-05-01T10:30:43Z | 2026-05-01T10:32:48Z | 3ac0baa | 集成测 `RUN_VOXCPM_INTEGRATION=1` |
 | T3.3 | ffmpeg helpers | pending | — | — | — | — |
 | T3.4 | lineTimings 计算 | pending | — | — | — | — |
 | T3.5 | tts 命令组装 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T3.2 — voxcpm-client + autoStart @ 3ac0baa
+- acceptance: mock fetch：`registerVoice` → `speak` 流程 → ✓；`parseVoxcpmEndpoint` 单测 → ✓；集成：`RUN_VOXCPM_INTEGRATION=1` 时 autoStart 拉起并 `/health` → ✓（默认跳过；CI 无 Python 依赖）
+- artifacts: `src/tts/voxcpm-client.ts` / `src/tts/voxcpm-server.ts` / `tests/voxcpm-client.test.ts` / `tests/voxcpm-server.test.ts` / `tests/voxcpm-server.integration.test.ts`
+- 备注：`ensureVoxcpmServer.dispose()` 对 autoStart 子进程 `SIGTERM`，超时 `SIGKILL`
 
 ### T3.1 — VoxCPM FastAPI wrapper @ 769b75b
 - acceptance: `uvicorn server:app` + `curl`：`GET /health` → ✓；`POST /v1/voices` → ✓；`python server.py`（短时启动）→ ✓；`POST /v1/speech` 返回 `audio/wav`（48kHz，取自 `model.tts_model.sample_rate`）→ 需在本地有效 `VOXCPM_MODEL_DIR` 权重与参考音频下验收（本 CI 环境未加载完整权重时 `/v1/speech` 返回 503，路径已接通）
