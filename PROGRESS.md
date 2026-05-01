@@ -6,19 +6,19 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `实现 package.json / tsconfig / remotion.config / bin 入口 / .gitignore，验收后 chore(T0.1): done`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T12:45:00Z`
+- **next_action**: `开始 T0.2（类型定义 + Schema）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
 
-1. [x] 已读 `PRD.md` 全文
-2. [x] 已读 `TASKS.md` 全文
-3. [x] 已读本文件，确认 `active_task` 与 `next_action`
-4. [x] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
-5. [x] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致（尚无 done 任务，仅核对干净树）
+1. [ ] 已读 `PRD.md` 全文
+2. [ ] 已读 `TASKS.md` 全文
+3. [ ] 已读本文件，确认 `active_task` 与 `next_action`
+4. [ ] 已 `git status` 确认工作树干净（如有未提交改动，先决定是否丢弃/续上）
+5. [ ] 已确认 `git log -1` 的 hash 与下表中最近一个 `done` 任务的 commit 一致
 
 ---
 
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:00:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:00:00Z | 2026-05-01T12:45:00Z | `4211ae8` | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,11 +81,12 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ `4211ae8`
+- acceptance: `npm install` 成功 → ✓ · `npx tsx bin/autovideo.ts --help` 显示全部子命令 → ✓ · `npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且输出 `not implemented` → ✓
+- artifacts: `package.json` · `package-lock.json` · `tsconfig.json` · `remotion.config.ts` · `bin/autovideo.ts` · `.gitignore` · PRD §13.1 补充 `@remotion/cli`
+- 备注：CI 环境曾缺 Node，通过 apt 安装 `nodejs` 后完成验收；PRD 要求 Node ≥ 20，当前容器为 v18，后续可用 install.sh / nvm 对齐。
 
----
-
-## 决策日志（遇到 PRD 模糊点时记录）
+（开发中由 agent 继续追加）
 
 > 当 PRD 中某处描述模糊但 agent 自行决定继续（**不阻塞、不报告人类**）时，必须在这里记录决策。后续如果决策错了，可以按时间倒查。
 >
@@ -135,6 +136,6 @@
 - PRD 原描述：`dependencies` 仅列出 `@remotion/bundler`、`@remotion/renderer`、`remotion` 等，未列 `Config` 来源包。
 - 实际实现：`remotion.config.ts` 使用 `import { Config } from "@remotion/cli/config"`，故在 `package.json` 中显式加入 `"@remotion/cli": "^4.0.0"`，与 §13.1 示例 JSON 已对齐。
 - 原因：Remotion 4 的 `Config` 由 `@remotion/cli` 提供；缺少该依赖时 TypeScript 无法解析 `remotion.config.ts`。
-- PRD 是否同步更新：是（与本条同 commit）
+- PRD 是否同步更新：是（`4211ae8`）
 
 （开发中由 agent 继续追加）
