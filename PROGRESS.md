@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T1.3`
-- **last_updated**: `2026-05-01T18:30:00Z`
-- **next_action**: `实现 narration.ts 与验收单测`
-- **completed**: `5 / 35`
+- **active_task**: `T1.4`
+- **last_updated**: `2026-05-01T19:05:00Z`
+- **next_action**: `开始 T1.4 — 资产 hash 复制`
+- **completed**: `6 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -34,7 +34,7 @@
 | T0.3 | 配置 loader | done | 2026-05-01T14:10:00Z | 2026-05-01T14:43:30Z | f96724c | — |
 | T1.1 | 项目文件 + meta 解析 | done | 2026-05-01T16:00:00Z | 2026-05-01T17:50:00Z | e33ff88 | — |
 | T1.2 | 块解析 + directive | done | 2026-05-01T09:49:11Z | 2026-05-01T09:52:02Z | 820b0e9 | — |
-| T1.3 | 旁白预处理 | in_progress | 2026-05-01T18:30:00Z | — | — | — |
+| T1.3 | 旁白预处理 | done | 2026-05-01T18:30:00Z | 2026-05-01T19:05:00Z | 991a46f | — |
 | T1.4 | 资产 hash 复制 | pending | — | — | — | — |
 | T1.5 | compile 命令组装 | pending | — | — | — | — |
 | T2.1 | 缓存 store | pending | — | — | — | — |
@@ -106,6 +106,11 @@
 - artifacts: `src/types/script.ts` / `schemas/script.schema.json` / `scripts/export-script-schema.ts` / `tests/fixtures/minimal-script.json` / `tests/script-types.test.ts`
 - 备注：`npm run export-schema` 可由 Zod 重导出 JSON Schema；根 `scriptSchema` 对块级额外字段 `additionalProperties: true` 以匹配宽松 IR。
 
+### T1.3 — 旁白预处理 @ 991a46f
+- acceptance: `hello **world**` → highlights `[{start:6,end:11}]`、`ttsText` `hello world` → ✓；`\*\*ptr` → `ttsText` `**ptr`、无 highlights → ✓；多段高亮与嵌套式输入按顺序配对 `**...**` → ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/parser/narration.ts` / `tests/narration.test.ts`
+- 备注：`\*` 按字符消解为字面 `*`（故 `\*\*` → `**`）；配对扫描在消解后的字符串上进行
+
 ---
 
 ## 决策日志（遇到 PRD 模糊点时记录）
@@ -143,6 +148,12 @@
 - 选择方案：首个 `>>>` 之前若有非空行则报错，确保内容文件「只含块」、避免静默吞掉错别字段落。
 - 备选方案：忽略前言 — 易掩盖用户把说明写在错误位置。
 - 影响范围：仅 `extractRegionsFromFile`。
+
+### 2026-05-01 19:05 | T1.3
+- 模糊点：PRD §3.7 仅列举 `\*\*` 字面星号转义，未说明单个 `\*` 或其它反斜杠组合。
+- 选择方案：逐字符扫描——`\` 后紧跟 `*` 则吞掉反斜杠并输出一个字面 `*`；其余 `\` 保留为字面字符。
+- 备选方案：仅替换字面子串 `\*\*` — TypeScript/正则单次替换无法表达「两个连续转义星号」，且无法一致处理文档中 `\foo` 等边角输入。
+- 影响范围：仅 `parseNarrationLine`；与 Markdown 常见「星号转义」心智一致。
 
 ---
 
