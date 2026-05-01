@@ -7,8 +7,8 @@
 ## 当前状态（agent 每次更新后修改这一节）
 
 - **active_task**: `T3.5`
-- **last_updated**: `2026-05-01T14:15:00Z`
-- **next_action**: `开始 T3.5 — tts 命令组装`
+- **last_updated**: `2026-05-01T15:30:00Z`
+- **next_action**: `实现 src/cli/tts.ts 与 E2E mock 验收`
 - **completed**: `14 / 35`
 - **blockers**: `0`
 
@@ -43,7 +43,7 @@
 | T3.2 | voxcpm-client + autoStart | done | 2026-05-01T10:30:43Z | 2026-05-01T10:32:48Z | 3ac0baa | 集成测 `RUN_VOXCPM_INTEGRATION=1` |
 | T3.3 | ffmpeg helpers | done | 2026-05-01T10:35:00Z | 2026-05-01T10:37:00Z | 0fcbb40 | `anullsrc` fixture；concat 用临时 concat demuxer |
 | T3.4 | lineTimings 计算 | done | 2026-05-01T14:05:00Z | 2026-05-01T14:12:00Z | cad58d4 | 第 1 行 `startMs=0`，与 §6.2.3 公式一致 |
-| T3.5 | tts 命令组装 | pending | — | — | — | — |
+| T3.5 | tts 命令组装 | in_progress | 2026-05-01T15:30:00Z | — | — | — |
 | T4.1 | prompt + 组件骨架 | pending | — | — | — | — |
 | T4.2 | Claude SDK 调用 + prompt cache | pending | — | — | — | — |
 | T4.3 | 子进程隔离工具 | pending | — | — | — | — |
