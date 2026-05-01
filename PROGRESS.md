@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `完成 package.json / tsconfig / remotion.config / bin 占位 / .gitignore，验收后标记 done`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T13:15:00Z`
+- **next_action**: `开始 T0.2（类型定义 + Schema）`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | 2026-05-01T12:00:00Z | — | — | — |
+| T0.1 | 仓库骨架 | done | 2026-05-01T12:00:00Z | 2026-05-01T13:15:00Z | 460b620 | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T0.1 — 仓库骨架 @ 460b620
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 显示所有子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 + `not implemented` → ✓
+- artifacts: `package.json`, `package-lock.json`, `tsconfig.json`, `remotion.config.ts`, `bin/autovideo.ts`, `.gitignore`
+- 备注：`remotion.config.ts` 在 Remotion v4 用 `overrideFfmpegCommand` 注入 `-g 1 -keyint_min 1`（见文档 commit `2613408`）；`npx tsc --noEmit` 通过。
 
 （开发中由 agent 追加）
 
