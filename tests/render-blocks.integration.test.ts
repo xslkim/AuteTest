@@ -22,6 +22,7 @@ vi.mock("@remotion/renderer", async (importOriginal) => {
 
 import { CacheStore } from "../src/cache/store.js";
 import { DEFAULT_RENDER } from "../src/config/defaults.js";
+import { concatPartials } from "../src/render/concat.js";
 import { computePartialCacheBundle } from "../src/render/partial-cache-key.js";
 import { renderBlockPartials, readRemotionRendererVersion } from "../src/render/render-blocks.js";
 import type { Script } from "../src/types/script.js";
@@ -128,6 +129,23 @@ describe.skipIf(!runIntegration)("renderBlockPartials integration", () => {
     expect(existsSync(p2)).toBe(true);
     expect(ffprobeFirstPacketIsKeyframe(p1)).toBe(true);
     expect(ffprobeFirstPacketIsKeyframe(p2)).toBe(true);
+
+    await concatPartials({
+      partialPathsAbs: [p1, p2],
+      buildOutDirAbs: buildDir,
+    });
+    expect(existsSync(join(buildDir, "output", "concat.txt"))).toBe(true);
+    const finalPath = join(buildDir, "output", "final.mp4");
+    expect(existsSync(finalPath)).toBe(true);
+
+    const replay = spawnSync(
+      "ffmpeg",
+      ["-nostats", "-v", "warning", "-i", finalPath, "-f", "null", "-"],
+      { encoding: "utf8", maxBuffer: 50 * 1024 * 1024 },
+    );
+    expect(replay.status).toBe(0);
+    const log = replay.stderr.toLowerCase();
+    expect(log).not.toMatch(/non-monotonic dts|invalid timestamps|dts < 0/);
 
     const c1 = computePartialCacheBundle({
       block: script.blocks[0]!,
