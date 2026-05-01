@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T4.1`
-- **last_updated**: `2026-05-01T17:30:00Z`
-- **next_action**: `实现 src/ai/prompts/component.md 与 docs/ARCHITECTURE.md「Visuals prompt」节`
-- **completed**: `15 / 35`
+- **active_task**: `T4.2`
+- **last_updated**: `2026-05-01T17:55:00Z`
+- **next_action**: `开始 T4.2 — Claude SDK 调用 + prompt cache`
+- **completed**: `16 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -44,7 +44,7 @@
 | T3.3 | ffmpeg helpers | done | 2026-05-01T10:35:00Z | 2026-05-01T10:37:00Z | 0fcbb40 | `anullsrc` fixture；concat 用临时 concat demuxer |
 | T3.4 | lineTimings 计算 | done | 2026-05-01T14:05:00Z | 2026-05-01T14:12:00Z | cad58d4 | 第 1 行 `startMs=0`，与 §6.2.3 公式一致 |
 | T3.5 | tts 命令组装 | done | 2026-05-01T15:30:00Z | 2026-05-01T16:05:00Z | f05ac08 | 入口用宽松 schema + `voiceRef` 存在性 |
-| T4.1 | prompt + 组件骨架 | in_progress | 2026-05-01T17:30:00Z | — | — | — |
+| T4.1 | prompt + 组件骨架 | done | 2026-05-01T17:30:00Z | 2026-05-01T17:55:00Z | 59bb212 | `prompt-version.ts` 与 cache CLI 共用 MD5 前缀 |
 | T4.2 | Claude SDK 调用 + prompt cache | pending | — | — | — | — |
 | T4.3 | 子进程隔离工具 | pending | — | — | — | — |
 | T4.4 | 验证（tsc + render smoke） | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T4.1 — prompt + 组件骨架 @ 59bb212
+- acceptance: `src/ai/prompts/component.md` 存在且含 AnimationProps/Theme/白名单/`{tsx}` 约定；`docs/ARCHITECTURE.md` 含「Visuals prompt」设计与样例 → ✓；`component.md` 字节 MD5 多次计算一致、`prompt-version` 单测通过 → ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/ai/prompts/component.md` / `docs/ARCHITECTURE.md` / `src/ai/prompt-version.ts` / `src/cli/cache.ts`（改用共享读取）/ `tests/prompt-version.test.ts`
+- 备注：骨架示例仅用 `AnimationProps` + `useCurrentFrame`，避免依赖 `useVideoConfig`
 
 ### T3.5 — tts 命令组装 @ f05ac08
 - acceptance: mock `POST /v1/speech`：2 块 5 行跑完、`audio` / `public/audio/B01.wav` → ✓；同脚本跑第二次 `/v1/speech` 次数仍为 5（cache 命中、0 新增 API）→ ✓；`npm run test` + `npm run build` → ✓
