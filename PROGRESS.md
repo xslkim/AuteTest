@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T3.5`
-- **last_updated**: `2026-05-01T14:15:00Z`
-- **next_action**: `开始 T3.5 — tts 命令组装`
-- **completed**: `14 / 35`
+- **active_task**: `T4.1`
+- **last_updated**: `2026-05-01T16:05:00Z`
+- **next_action**: `开始 T4.1 — prompt + 组件骨架`
+- **completed**: `15 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -43,7 +43,7 @@
 | T3.2 | voxcpm-client + autoStart | done | 2026-05-01T10:30:43Z | 2026-05-01T10:32:48Z | 3ac0baa | 集成测 `RUN_VOXCPM_INTEGRATION=1` |
 | T3.3 | ffmpeg helpers | done | 2026-05-01T10:35:00Z | 2026-05-01T10:37:00Z | 0fcbb40 | `anullsrc` fixture；concat 用临时 concat demuxer |
 | T3.4 | lineTimings 计算 | done | 2026-05-01T14:05:00Z | 2026-05-01T14:12:00Z | cad58d4 | 第 1 行 `startMs=0`，与 §6.2.3 公式一致 |
-| T3.5 | tts 命令组装 | pending | — | — | — | — |
+| T3.5 | tts 命令组装 | done | 2026-05-01T15:30:00Z | 2026-05-01T16:05:00Z | f05ac08 | 入口用宽松 schema + `voiceRef` 存在性 |
 | T4.1 | prompt + 组件骨架 | pending | — | — | — | — |
 | T4.2 | Claude SDK 调用 + prompt cache | pending | — | — | — | — |
 | T4.3 | 子进程隔离工具 | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T3.5 — tts 命令组装 @ f05ac08
+- acceptance: mock `POST /v1/speech`：2 块 5 行跑完、`audio` / `public/audio/B01.wav` → ✓；同脚本跑第二次 `/v1/speech` 次数仍为 5（cache 命中、0 新增 API）→ ✓；`npm run test` + `npm run build` → ✓
+- artifacts: `src/cli/tts.ts` / `src/tts/cache-key.ts` / `src/tts/voxcpm-client.ts`（`speak` 支持 `AbortSignal`）/ `bin/autovideo.ts` / `tests/tts-cli.test.ts` / `tests/tts-cache-key.test.ts`
+- 备注：`--force` 且无 `--block` 时整块行级 miss；失败 `abort` 后打印 `resume` 提示；决策见决策日志 T3.5
 
 ### T3.4 — lineTimings 计算 @ cad58d4
 - acceptance: `computeLineTimings([1,0.5,2])` → `[{0,1000},{1200,1700},{1900,3900}]`（§6.2.3 + 行间 200 ms）→ ✓；`npm run test` + `npm run build` → ✓
@@ -230,6 +235,12 @@
 - 选择方案：`CleanCacheOptions` 中各条件按 AND 收敛；仅当 `type`/`olderThanMs`/`stale` 全部满足（已指定的项）时删除。
 - 备选方案：OR — 易删掉仍应保留的条目。
 - 影响范围：`CacheStore.clean`；T2.2 CLI 应保持一致。
+
+### 2026-05-01 10:50 | T3.5
+- 模糊点：PRD §6.2 写 tts 入口为已 compile 的 `script.json`，而现有 `compiledScriptSchema` 为 `.strict()` 且禁止块上 `audio` 键，与「再次运行 tts」冲突。
+- 选择方案：`tts` 使用宽松 `scriptSchema.parse` + 最小前置校验（schemaVersion、非空旁白行、`voiceRef` 存在）；不写回时仍满足 compile 输出契约，写回后由全量 schema 校验磁盘 JSON。
+- 备选方案：为「compile 输出」与「tts 可重入」拆两套 Zod — 改动面大，留待后续类型整理。
+- 影响范围：仅 `src/cli/tts.ts` 入口校验。
 
 ---
 

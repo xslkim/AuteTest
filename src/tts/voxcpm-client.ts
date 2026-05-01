@@ -83,7 +83,12 @@ export class VoxcpmClient {
   }
 
   /** `POST /v1/speech`，返回 WAV 二进制 */
-  async speak(text: string, voiceId: string, params: VoxcpmSpeakParams): Promise<Buffer> {
+  async speak(
+    text: string,
+    voiceId: string,
+    params: VoxcpmSpeakParams,
+    options?: { signal?: AbortSignal },
+  ): Promise<Buffer> {
     const body = {
       text,
       voice_id: voiceId,
@@ -99,6 +104,7 @@ export class VoxcpmClient {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+      signal: options?.signal,
     });
     if (!res.ok) {
       const detail = await readErrorBody(res);
