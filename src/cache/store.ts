@@ -88,6 +88,8 @@ export interface CleanCacheOptions {
   olderThanMs?: number;
   /** when present, delete entries for which this returns true */
   stale?: (entry: CacheManifestEntry) => boolean;
+  /** when true, only count matching entries; manifest and files unchanged */
+  dryRun?: boolean;
 }
 
 export interface EvictIfOverLimitOptions {
@@ -244,7 +246,7 @@ export class CacheStore {
    */
   async clean(opts: CleanCacheOptions = {}): Promise<number> {
     await this.ensureLayout();
-    const { type, olderThanMs, stale } = opts;
+    const { type, olderThanMs, stale, dryRun = false } = opts;
     const cutoff = olderThanMs != null ? Date.now() - olderThanMs : null;
 
     return this.withManifest(async (data) => {
@@ -256,13 +258,15 @@ export class CacheStore {
           if (!Number.isFinite(hit) || hit > cutoff) continue;
         }
         if (stale != null && !stale(entry)) continue;
-        const abs = path.join(this.cacheDir, entry.file);
-        try {
-          await fs.unlink(abs);
-        } catch {
-          /* already gone */
+        if (!dryRun) {
+          const abs = path.join(this.cacheDir, entry.file);
+          try {
+            await fs.unlink(abs);
+          } catch {
+            /* already gone */
+          }
+          delete data[id];
         }
-        delete data[id];
         removed += 1;
       }
       return { data, result: removed };
