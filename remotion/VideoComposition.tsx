@@ -78,6 +78,37 @@ function computedTimingForBlock(
   return { enterFrames, exitFrames, durationInFrames };
 }
 
+/**
+ * preview / Studio：`Composition.durationInFrames` 需与块内 `computedTimingForBlock` 一致。
+ */
+export function previewCompositionDurationFrames(block: Block, fps: number): number {
+  return computedTimingForBlock(block, fps).durationInFrames;
+}
+
+/** §6.5：无 TTS `lineTimings` 时在 hold 段内按行均匀切段（仅预览字幕布局）。 */
+export function uniformLineTimingsForPreview(
+  lineCount: number,
+  holdMs: number,
+): { lineIndex: number; startMs: number; endMs: number }[] {
+  if (lineCount <= 0 || holdMs <= 0) {
+    return [];
+  }
+  const slice = holdMs / lineCount;
+  const out: { lineIndex: number; startMs: number; endMs: number }[] = [];
+  for (let i = 0; i < lineCount; i++) {
+    out.push({
+      lineIndex: i,
+      startMs: Math.round(i * slice),
+      endMs: Math.round((i + 1) * slice),
+    });
+  }
+  const last = out[out.length - 1];
+  if (last != null) {
+    last.endMs = Math.round(holdMs);
+  }
+  return out;
+}
+
 export interface BlockCompositionProps {
   blockId: string;
   blockLoaders: Record<string, BlockComponentLoader>;
@@ -196,6 +227,15 @@ export const BlockComposition: React.FC<BlockCompositionProps> = ({
       ? block.audio.wavPath.slice("public/".length)
       : `audio/${block.id}.wav`;
 
+  const holdMs =
+    ((timing.durationInFrames - timing.enterFrames - timing.exitFrames) / fps) * 1000;
+
+  const storedLineTimings = block.audio?.lineTimings;
+  const subtitleLineTimings =
+    storedLineTimings != null && storedLineTimings.length > 0
+      ? storedLineTimings
+      : uniformLineTimingsForPreview(block.narration.lines.length, holdMs);
+
   const animationProps = {
     frame,
     durationInFrames: timing.durationInFrames,
@@ -206,8 +246,8 @@ export const BlockComposition: React.FC<BlockCompositionProps> = ({
     fps,
   };
 
-  const lineTimings = block.audio?.lineTimings ?? [];
-  const hasAudio = !!block.audio && lineTimings.length > 0;
+  const hasAudio =
+    !!block.audio && storedLineTimings != null && storedLineTimings.length > 0;
 
   return (
     <BlockFrame
@@ -229,7 +269,7 @@ export const BlockComposition: React.FC<BlockCompositionProps> = ({
       </Suspense>
       <SubtitleOverlay
         lines={block.narration.lines}
-        lineTimings={lineTimings}
+        lineTimings={subtitleLineTimings}
         audioStartFrame={timing.enterFrames}
         frame={frame}
         fps={fps}
