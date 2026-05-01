@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.1`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `实现仓库骨架并实现 bin/autovideo.ts stub`
-- **completed**: `0 / 35`
+- **active_task**: `T0.2`
+- **last_updated**: `2026-05-01T13:05:00Z`
+- **next_action**: `开始 T0.2：类型定义 + Schema`
+- **completed**: `1 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -29,7 +29,7 @@
 
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
-| T0.1 | 仓库骨架 | in_progress | `2026-05-01T12:00:00Z` | — | — | — |
+| T0.1 | 仓库骨架 | done | `2026-05-01T12:00:00Z` | `2026-05-01T13:05:00Z` | `39a7c8d` | — |
 | T0.2 | 类型定义 + Schema | pending | — | — | — | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
@@ -81,7 +81,11 @@
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
 
-（开发中由 agent 追加）
+### T0.1 — 仓库骨架 @ 39a7c8d
+
+- acceptance: `npm install` 成功 → ✓；`npx tsx bin/autovideo.ts --help` 列出全部子命令 → ✓；`npx tsx bin/autovideo.ts compile foo.json` 退出码 1 且 stderr 含 `not implemented` → ✓
+- artifacts: `package.json`、`package-lock.json`、`tsconfig.json`、`remotion.config.ts`、`bin/autovideo.ts`、`.gitignore`
+- 备注：`remotion.config.ts` 使用 `overrideFfmpegCommand` + libx264 `keyint=1` 等价满足 §6.4 IDR concat；PRD §6.4 / TASKS T0.1 已同步
 
 ---
 
@@ -130,5 +134,12 @@
 > - 实际实现：<...>
 > - 原因：<...>
 > - PRD 是否同步更新：是 / 否（commit hash）
+
+### T0.1 | PRD §6.4 GOP/IDR、`remotion.config.ts` | Config API
+
+- PRD 原描述：`Config.setKeyframeInterval(1)`（TASKS T0.1 同）
+- 实际实现：`Config.overrideFfmpegCommand` 对 `libx264` 注入 `-x264-params keyint=1:min-keyint=1:scenecut=0`；`setVideoImageFormat('jpeg')` 不变
+- 原因：Remotion 4.x 已移除该 Config 方法，`tsc` 无法编译
+- PRD 是否同步更新：是（`2e8ab44`）
 
 （开发中由 agent 追加）
