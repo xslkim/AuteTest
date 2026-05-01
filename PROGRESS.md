@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T8.3`
-- **last_updated**: `2026-05-02T18:00:00Z`
-- **next_action**: `实现 starter 模板 + runInitCommand + CLI 接线`
-- **completed**: `35 / 40`
+- **active_task**: `T9.1`
+- **last_updated**: `2026-05-02T18:22:00Z`
+- **next_action**: `开始 T9.1 — 单测补全`
+- **completed**: `36 / 40`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -64,7 +64,7 @@
 | T7.2 | preview 命令 | done | 2026-05-02T14:00:00Z | 2026-05-02T14:30:00Z | f47458a | `remotion-root-preview.tsx`；`AUTVIDEO_REMOTION_ENTRY`；`--block` 默认 `--port=3333` + `xdg-open` |
 | T8.1 | build orchestrator | done | 2026-05-02T13:02:00Z | 2026-05-02T13:11:00Z | 8a2ce5d | 子 stage 用 `cwd=build-out`、`script.json` 相对路径；不经 `process.chdir`（Vitest worker 限制） |
 | T8.2 | doctor | done | 2026-05-02T15:00:00Z | 2026-05-02T15:35:00Z | 0ee7d50 | 退出码 0/1/2；`doctor` 允许 `--config`/`--cache-dir` |
-| T8.3 | init + templates | in_progress | 2026-05-02T18:00:00Z | — | — | — |
+| T8.3 | init + templates | done | 2026-05-02T18:00:00Z | 2026-05-02T18:22:00Z | 3a29403 | `init <dir> [--force]`；目标不存在时创建父目录 |
 | T9.1 | 单测补全 | pending | — | — | — | — |
 | T9.2 | E2E 测试 | pending | — | — | — | — |
 | T9.3 | install.sh | pending | — | — | — | — |
@@ -80,6 +80,11 @@
 > - acceptance: <PRD/TASKS 中列出的验收项> → ✓ / ✗
 > - artifacts: <生成的关键文件路径列表>
 > - 备注：<可选>
+
+### T8.3 — init + templates @ 3a29403
+- acceptance：`autovideo init demo` → 目录结构齐全（含 `hero.png`）→ ✓；模板 README 含 B00.wav / ANTHROPIC_API_KEY / doctor / build → ✓；单测含 init + 放置 B00.wav 后 `compile` → ✓；手动 `npx tsx bin/autovideo.ts init …` 目录列表齐全 → ✓（完整 `build` 需本机 VoxCPM / Claude，与 TASKS 手写验收一致）；`npm run build` + `npm run test` → ✓
+- artifacts: `src/cli/init.ts` / `templates/starter/*` / `bin/autovideo.ts` / `tests/init-cli.test.ts`
+- 备注：`doctor-cli` 单测在 Node 低于 v20 的环境下允许「Node 版本」为 FAIL（其余项仍须 PASS）
 
 ### T8.2 — doctor @ 0ee7d50
 - acceptance：§7 表 11 项 + PASS/WARN/FAIL + 修复指引 → ✓；退出码 0（全 PASS）/1（有 WARN 无 FAIL）/2（有 FAIL）→ ✓；本机未装齐模型与 key 时 doctor 打出 FAIL + 退出 2 → ✓；`npm run build` + `npm run test` → ✓
