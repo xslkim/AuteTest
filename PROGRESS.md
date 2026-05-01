@@ -6,10 +6,10 @@
 
 ## 当前状态（agent 每次更新后修改这一节）
 
-- **active_task**: `T0.2`
-- **last_updated**: `2026-05-01T12:00:00Z`
-- **next_action**: `实现 src/types/script.ts、schemas/script.schema.json 与验收`
-- **completed**: `1 / 35`
+- **active_task**: `T0.3`
+- **last_updated**: `2026-05-01T12:45:00Z`
+- **next_action**: `开始 T0.3 — 配置 loader`
+- **completed**: `2 / 35`
 - **blockers**: `0`
 
 恢复检查清单（agent 启动时按顺序确认）：
@@ -30,7 +30,7 @@
 | ID | 标题 | 状态 | 开始 | 完成 | Commit | 备注 |
 |----|------|------|------|------|--------|------|
 | T0.1 | 仓库骨架 | done | 2026-05-01T09:26:26Z | 2026-05-01T09:28:36Z | aa66616 | — |
-| T0.2 | 类型定义 + Schema | in_progress | 2026-05-01T12:00:00Z | — | — | — |
+| T0.2 | 类型定义 + Schema | done | 2026-05-01T12:00:00Z | 2026-05-01T12:45:00Z | f6fc71d | — |
 | T0.3 | 配置 loader | pending | — | — | — | — |
 | T1.1 | 项目文件 + meta 解析 | pending | — | — | — | — |
 | T1.2 | 块解析 + directive | pending | — | — | — | — |
@@ -86,6 +86,11 @@
 - artifacts: `package.json` / `package-lock.json` / `tsconfig.json` / `remotion.config.ts` / `bin/autovideo.ts` / `.gitignore`
 - 备注：环境经 apt 安装 `nodejs`/`npm` 后完成验收；`@remotion/cli` 见决策日志 T0.1。
 
+### T0.2 — 类型定义 + Schema @ f6fc71d
+- acceptance: `tsc --noEmit` 零错误 → ✓；最小 `tests/fixtures/minimal-script.json` 经 Ajv 对照 `schemas/script.schema.json` 校验通过 → ✓；`assertCompiledScript({})` 抛错 → ✓（vitest）
+- artifacts: `src/types/script.ts` / `schemas/script.schema.json` / `scripts/export-script-schema.ts` / `tests/fixtures/minimal-script.json` / `tests/script-types.test.ts`
+- 备注：`npm run export-schema` 可由 Zod 重导出 JSON Schema；根 `scriptSchema` 对块级额外字段 `additionalProperties: true` 以匹配宽松 IR。
+
 ---
 
 ## 决策日志（遇到 PRD 模糊点时记录）
@@ -105,6 +110,12 @@
 - 选择方案：在 `dependencies` 中增加 `"@remotion/cli": "^4.0.0"`，与其它 Remotion 包主版本对齐。
 - 备选方案：从 `remotion` 包导入旧版 `Config` — v4 已迁移，易编译或运行时失败。
 - 影响范围：仅 `package.json`；与 §13.1 列表相比多一项 CLI 包，属渲染管线必要配套。
+
+### 2026-05-01 12:40 | T0.2
+- 模糊点：`BlockFrameProps.children` / 默认组件返回类型在纯 TS 模块中如何表达。
+- 选择方案：`import type { ReactNode, ReactElement } from "react"`，devDependency 增加 `@types/react`；`BlockVisualComponent` 返回 `ReactElement | null`。
+- 备选方案：用 `unknown` / 不写组件签名 — 会削弱 PRD 契约与后续 visuals 校验。
+- 影响范围：`package.json` devDeps；`src/types/script.ts`。
 
 ---
 
