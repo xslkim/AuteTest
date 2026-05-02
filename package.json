@@ -7,7 +7,7 @@
     "autovideo": "dist/bin/autovideo.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r src/ai/prompts dist/src/ai/",
     "test": "vitest run --exclude tests/e2e.test.ts",
     "test:e2e": "vitest run tests/e2e.test.ts",
     "test:watch": "vitest",

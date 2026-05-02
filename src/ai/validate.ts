@@ -1,6 +1,6 @@
 import { parse } from "@babel/parser";
 import { createRequire } from "node:module";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve as pathResolve } from "node:path";
@@ -10,6 +10,21 @@ import { bundle } from "@remotion/bundler";
 import { renderStill, selectComposition } from "@remotion/renderer";
 import { getTheme } from "../../remotion/engine/theme.js";
 import { runIsolated, type RunIsolatedOptions } from "./sandbox.js";
+
+/** 检测是否在 WSL2 或无权限的 Linux 容器环境中（unshare -n 会失败） */
+function detectNoUnshare(): boolean {
+  try {
+    const osRelease = readFileSync("/proc/version", "utf8");
+    if (osRelease.toLowerCase().includes("microsoft") || osRelease.toLowerCase().includes("wsl")) {
+      return true;
+    }
+  } catch {
+    // 非 Linux 或 /proc 不存在时跳过
+  }
+  return false;
+}
+
+const NETWORK_ISOLATION_AVAILABLE = !detectNoUnshare();
 
 const require = createRequire(import.meta.url);
 
@@ -306,7 +321,7 @@ export async function validateStatic(
       [tscJsPath, "-p", tsconfigPath],
       {
         cwd: buildOutDir!,
-        isolateNetwork: opts.isolateNetwork ?? true,
+        isolateNetwork: opts.isolateNetwork ?? NETWORK_ISOLATION_AVAILABLE,
         timeoutMs: opts.timeoutMs ?? 120_000,
         memLimitBytes: opts.memLimitBytes,
         cpuLimitSec: opts.cpuLimitSec,
@@ -477,10 +492,15 @@ registerRoot(RemotionRoot);
       publicDir: null,
     });
 
+    // WSL2 下使用 --single-process 模式以兼容无 GPU 环境
+    const wslChromiumOptions = NETWORK_ISOLATION_AVAILABLE
+      ? undefined
+      : ({ enableMultiProcessOnLinux: false });
     const composition = await selectComposition({
       serveUrl,
       id: "VisualValidateSmoke",
       inputProps: {},
+      ...(wslChromiumOptions ? { chromiumOptions: wslChromiumOptions } : {}),
     });
 
     const still = await renderStill({
@@ -489,6 +509,7 @@ registerRoot(RemotionRoot);
       frame,
       output: null,
       imageFormat: "png",
+      ...(wslChromiumOptions ? { chromiumOptions: wslChromiumOptions } : {}),
     });
 
     const buf = still.buffer;

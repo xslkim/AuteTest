@@ -48,7 +48,17 @@ export function parseVoxcpmEndpoint(endpoint: string): { host: string; port: num
 
 function repoTtsServerDir(): string {
   const here = dirname(fileURLToPath(import.meta.url));
-  return join(here, "..", "..", "tts-server");
+  /** `src/tts` → `../../tts-server`；编译后 `dist/src/tts` → `../../../tts-server` */
+  const candidates = [
+    join(here, "..", "..", "tts-server"),
+    join(here, "..", "..", "..", "tts-server"),
+  ];
+  for (const p of candidates) {
+    if (existsSync(join(p, "server.py"))) {
+      return p;
+    }
+  }
+  throw new Error(`找不到 tts-server/server.py（已从 ${here} 探测）`);
 }
 
 function defaultPythonExecutable(ttsServerDir: string): string {

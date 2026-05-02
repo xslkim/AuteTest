@@ -1,0 +1,39 @@
+{
+  "voxcpm": {
+    "endpoint": "http://127.0.0.1:8000",
+    "modelDir": "/home/xsl/models/VoxCPM2",
+    "autoStart": true,
+    "cfgValue": 2,
+    "inferenceTimesteps": 10,
+    "denoise": false,
+    "retryBadcase": true,
+    "concurrency": 4
+  },
+  "anthropic": {
+    "apiKeyEnv": "ANTHROPIC_AUTH_TOKEN",
+    "model": "claude-sonnet-4-6",
+    "promptCaching": false,
+    "maxRetries": 3,
+    "concurrency": 4
+  },
+  "render": {
+    "blockConcurrency": 1,
+    "framesConcurrencyPerBlock": null,
+    "browser": null,
+    "minHoldSec": 1.5,
+    "defaultEnterSec": 0.5,
+    "defaultExitSec": 0.3,
+    "loudnorm": {
+      "i": -16,
+      "tp": -1.5,
+      "lra": 11,
+      "twoPass": true,
+      "audioBitrate": "192k"
+    }
+  },
+  "cache": {
+    "dir": "~/.autovideo/cache",
+    "maxSizeGB": 20,
+    "evictTrigger": "stage-start"
+  }
+}

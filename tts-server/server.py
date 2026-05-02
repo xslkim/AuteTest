@@ -66,13 +66,11 @@ def _get_model() -> Any:
                 "true",
                 "yes",
             )
-            device = os.environ.get("VOXCPM_DEVICE") or None
             _MODEL = VoxCPM.from_pretrained(
                 str(local),
                 local_files_only=True,
                 load_denoiser=True,
                 optimize=optimize,
-                device=device,
             )
         return _MODEL
 

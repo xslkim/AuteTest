@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { bundle } from "@remotion/bundler";
-import { makeCancelSignal, renderMedia, selectComposition } from "@remotion/renderer";
+import { makeCancelSignal, openBrowser, renderMedia, selectComposition } from "@remotion/renderer";
 
 import pLimit from "p-limit";
 
@@ -211,6 +211,23 @@ export async function renderBlockPartials(options: RenderBlocksOptions): Promise
 
   const browserExecutable = render.browser ?? undefined;
 
+  // WSL2 下使用 --single-process 模式以兼容无 GPU 环境
+  const isWsl2 = (() => {
+    try {
+      const v = readFileSync("/proc/version", "utf8").toLowerCase();
+      return v.includes("microsoft") || v.includes("wsl");
+    } catch {
+      return false;
+    }
+  })();
+  const chromiumOptions = isWsl2 ? ({ enableMultiProcessOnLinux: false }) : undefined;
+
+  // 所有块共享一个浏览器实例，避免 WSL2 下多进程竞争启动超时
+  const sharedBrowser = await openBrowser("chrome", {
+    browserExecutable: browserExecutable ?? null,
+    ...(chromiumOptions ? { chromiumOptions } : {}),
+  });
+
   const runOne = async (block: Block): Promise<void> => {
     if (aborted) {
       throw new Error("render cancelled due to failure in another block");
@@ -274,12 +291,21 @@ export async function renderBlockPartials(options: RenderBlocksOptions): Promise
         id: "Block",
         inputProps: { blockId: block.id },
         browserExecutable,
+        puppeteerInstance: sharedBrowser,
+        // WSL2 页面导航较慢，需要更大的超时（默认 30s 不够）
+        timeoutInMilliseconds: 180_000,
+        ...(chromiumOptions ? { chromiumOptions } : {}),
       });
     } catch (e) {
       if (aborted) {
         throw new Error("render cancelled due to failure in another block");
       }
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg =
+        e instanceof Error
+          ? e.message
+          : typeof e === "object"
+            ? JSON.stringify(e, null, 2)
+            : String(e);
       failAll(
         new Error(
           `selectComposition failed for block ${block.id}: ${msg}\nResume: autovideo render <script.json> --block ${block.id} --force`,
@@ -299,6 +325,9 @@ export async function renderBlockPartials(options: RenderBlocksOptions): Promise
         overwrite: true,
         cancelSignal,
         browserExecutable,
+        puppeteerInstance: sharedBrowser,
+        timeoutInMilliseconds: 180_000,
+        ...(chromiumOptions ? { chromiumOptions } : {}),
       });
     } catch (e) {
       if (aborted) {
@@ -323,5 +352,7 @@ export async function renderBlockPartials(options: RenderBlocksOptions): Promise
       cancel();
     }
     throw e;
+  } finally {
+    await sharedBrowser.close({ silent: true });
   }
 }

@@ -252,13 +252,16 @@ async function checkAnthropicPing(config: ResolvedAutovideoConfig): Promise<Doct
     };
   }
   try {
+    const baseURL = process.env.ANTHROPIC_BASE_URL;
     const client = new Anthropic({
       apiKey: key,
       maxRetries: 0,
       timeout: 15_000,
+      ...(baseURL ? { baseURL } : {}),
     });
+    const modelName = process.env.ANTHROPIC_MODEL || config.anthropic.model;
     const r = await client.messages.create({
-      model: config.anthropic.model,
+      model: modelName,
       max_tokens: 1,
       messages: [{ role: "user", content: "ping" }],
     });
@@ -266,7 +269,7 @@ async function checkAnthropicPing(config: ResolvedAutovideoConfig): Promise<Doct
     return {
       name: "Claude API 连通",
       status: ok ? "PASS" : "WARN",
-      detail: ok ? `model=${config.anthropic.model} id=${r.id.slice(0, 12)}…` : "空响应",
+      detail: ok ? `model=${modelName} id=${r.id.slice(0, 12)}…` : "空响应",
       fix: "检查网络与 ANTHROPIC_API_KEY；或稍后重试",
     };
   } catch (e) {

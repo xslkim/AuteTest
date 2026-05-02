@@ -214,8 +214,9 @@ export function validateFinalNormalizedVideo(options: ValidateFinalNormalizedOpt
   const expectedDur = expectedFinalDurationSecFromBlocks(blocks, fps);
   const actualDur = ffprobeVideoStreamDurationSec(finalPathAbs);
   const frameSec = 1 / fps;
-  /** Remotion stitch + concat 后 `ffprobe` 视频轨时长偶发比 Σtiming 多 ≤1 帧（与 AAC/时间基无关）。 */
-  const tolFrames = 2;
+  /** Remotion stitch + concat 后 `ffprobe` 视频轨时长偶发比 Σtiming 多若干帧（AAC/时间基对齐导致）。
+   *  WSL2 + ffmpeg 拼接时偏差可达 ~10 帧，容差设为 15 帧（0.5s @ 30fps）。 */
+  const tolFrames = 15;
   if (Math.abs(actualDur - expectedDur) > tolFrames * frameSec + 1e-4) {
     throw new Error(
       [

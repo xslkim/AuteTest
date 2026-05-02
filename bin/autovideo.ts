@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+// 必须最先执行：从 ~/.claude/settings.json 注入 cc-switch 配置的环境变量
+import { injectCcSwitchEnv } from "../src/ai/cc-env.js";
+injectCcSwitchEnv();
+
 import { Command } from "commander";
 import { runCompileCommand } from "../src/cli/compile.js";
 import { runCacheCommand } from "../src/cli/cache.js";

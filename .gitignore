@@ -6,6 +6,8 @@ github.txt
 node_modules/
 dist/
 build/
+__pycache__/
+projects/
 .cache/
 .cache-test*/
 .conctest*/
